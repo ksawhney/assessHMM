@@ -7,7 +7,7 @@
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
 
-\title[]{Nonparametric Bayesian Inverse Reinforcement Learning}
+\title[]{HMM}
 
 \author[Lam, Sawhney, Yoo]{A. Lam \and K. Sawhney \and J. Yoo}
 
@@ -18,37 +18,10 @@
 \frame{\titlepage}
 
 \begin{frame}
-\frametitle{Inverse Reinforcement Learning}
+\frametitle{Title}
     \begin{itemize}
-        \item Many situations in artificial intelligence involve \textbf{learning a task from observed demonstrations}. In robotics and autonomy, there exists a large body of literature on the topic of learning from demonstration. Much of this work has focused on generating direct functional mappings for low-level tasks
-        \item Alternatively, one might consider assuming a rational model for the agent, and using the observed data to invert the model. In the MDP framework, this problem is referred to as ​\textbf{inverse reinforcement learning (IRL)​}
-        \item IRL aims to find an agent’s underlying reward function given the behaviour data and the environment model, where it is assumed that the agent behaves optimally with respect to a \textbf{single reward function}. However in practice, data is often gathered collectively from multiple agents whose reward functions are \textbf{potentially different from each other​}
-    \end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Overview}
-    \begin{itemize}
-        \item Choi and Kim (2012) presents a nonparametric Bayesian approach to address the IRL problem with multiple reward functions...
         \item
     \end{itemize}
 \end{frame}
-
-\begin{frame}
-\frametitle{MDP Preliminaries}
-    \begin{itemize}
-        \item Suppose we have an MDP defined by $S, A, T, R, \gamma, b_0$ where $S$ is the finite state space, $A$ is the finite action space, $T(s, a, s')$ is the transition probability of $s$ to $s'$ when action $a$ is taken, $R(s,a)$ is the immediate reward of taking action $a$ under state $s$, $\gamma \in [0,1)$ is the discount factor, and $b_0(s)$ is the prior distribution for state $s$
-        \item The value of a policy $\pi$: $S \rightarrow A$ is
-        \begin{align*}
-        V^{\pi} &= \mathbb{E}\left[\sum_{t = 0}^{\infty} \gamma^{t} R(s_t, a_t) | b_0, \pi \right] \\
-        V^{\pi}(s) &= R(s, \pi(s)) + \gamma \sum_{s' \in S} T(s, \pi(s), s') V^{\pi}(s')
-        \end{align*}
-        \item The optimal policy $\pi^{\ast}$ maximises $V$ for all states
-        \begin{align*}
-        V^{\pi^{\ast}}(s) &= \max_{a \in A} \left\{ R(s,a) + \gamma \sum_{s' \in S} T(s,a,s') V^{\pi^{\ast}}(s') \right\}
-        \end{align*}
-    \end{itemize}
-\end{frame}
-
 
 \end{document}

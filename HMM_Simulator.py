@@ -173,20 +173,27 @@ class HMM_Simulator(object):
         Z = np.zeros(N)
         X = np.zeros(N)
         current_state = np.random.choice(self.valid_states, 1)[0]
+        # We will use the copy of the transition matrix in order to preserve the T
+        T_corr = np.copy(self.T)
+        
         for t in range(N):
             if cond(current_state):
                 W = self.T.copy()
-                W[np.where(W != 0)] = np.random.norm(loc=0.1, scale=0.05, size=len(W[np.where(W != 0)]))
+                
+                W[np.where(W != 0)] = stats.truncnorm.rvs(1, 100, loc=1, scale = 0.01, 
+                                                          size=len(W[np.where(W!=0)]))
+            
                 self.T = self.T * W
                 self.T_normalize()
-            current_state = np.random.choice(list(range(self.state_size)), 1, p=self.T[current_state, :])[0]
+            current_state = np.random.choice(list(range(self.state_size)), 1, 
+                                             p=self.T[current_state, :])[0]
             X[t] = current_state
             Z[t] = np.random.choice(list(range(self.obs_size)), 1, p=self.M[int(X[t]), :])
 
         return (X, Z)
 
     def perturb_transition(self):
- 
+        
         for s in self.valid_states:
             new_prob = np.copy(self.T[s, :])
             new_prob[s] = round(np.random.uniform(0.1, 0.3), 2)
@@ -212,7 +219,8 @@ class HMM_Simulator(object):
         while not valid_map:
             new_M = np.copy(self.M)
             new_T = np.copy(self.T)
-            new_obstacles = sorted(np.random.choice(list(range(self.state_size)), num_obstacles, replace=False))
+            new_obstacles = sorted(np.random.choice(list(range(self.state_size)), 
+                                                    num_obstacles, replace=False))
 
             for o in new_obstacles:
                 contig = sorted(self.find_contiguous_state(o))
@@ -303,5 +311,32 @@ class HMM_Simulator(object):
             y = self.map_size - s // self.map_size - 1
             name = self.S_type[s]
             ax.text((x + 0.4) * size, (y + 0.45) * size, name)
-
+            
+        pyplot.savefig("mapping.png")
         pyplot.show()
+        
+        
+    # function that generates the data in the txt format
+    # Save the observation and the true states in a separate file.
+    # Generate the data in 3 different ways (Normal, Random and Correlated)
+    def generate_txt(self, steps, seq_n, name):
+        
+        normal_seq = h.multi_generate(N = steps, num = seq_n, path_type = "normal_generate")
+        random_seq = h.multi_generate(N = steps, num = seq_n, path_type = "random_generate")
+        corr_seq = h.multi_generate(N = steps, num = seq_n, path_type = "corr_generate")
+        
+        np.savetxt("{}_normal_state.txt".format(name), X = normal_seq[0], 
+                   delimiter=" ", newline="\n;\n", fmt='%1.0i')
+        np.savetxt("{}_normal_obs.txt".format(name), X = normal_seq[1], 
+                   delimiter=" ", newline="\n;\n", fmt='%1.0i')
+        np.savetxt("{}_random_state.txt".format(name), X = random_seq[0], 
+                   delimiter=" ", newline="\n;\n", fmt='%1.0i')
+        np.savetxt("{}_random_obs.txt".format(name), X = random_seq[1], 
+                   delimiter=" ", newline="\n;\n", fmt='%1.0i')
+        np.savetxt("{}_corr_state.txt".format(name), X = corr_seq[0], 
+                   delimiter=" ", newline="\n;\n", fmt='%1.0i')
+        np.savetxt("{}_corr_obs.txt".format(name), X = corr_seq[1], 
+                   delimiter=" ", newline="\n;\n", fmt='%1.0i')
+        
+        return
+        

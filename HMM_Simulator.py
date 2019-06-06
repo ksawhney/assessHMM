@@ -31,6 +31,11 @@ class HMM_Simulator(object):
 
         # Keep track of any obstacles
         self.obstacles = obstacles
+        if self.obstacles is None:
+            self.valid_states = list(set(range(self.state_size)))
+        else:
+            self.valid_states = list(set(range(self.state_size)) - set(self.obstacles))
+
         ## First classify the states into different types
         self.corner_states = [0, self.map_size - 1,
                               self.state_size - self.map_size, self.state_size - 1]
@@ -114,13 +119,8 @@ class HMM_Simulator(object):
     # and observe the state according to M matrix
     # Return the true state locations and the observation at give time t
     def random_generate(self, N):
-        if self.obstacles is None:
-            non_obstacles = list(set(range(self.state_size)))
-        else:
-            non_obstacles = list(set(range(self.state_size)) - set(self.obstacles))
-
         Z = np.zeros(N)
-        X = np.random.choice(non_obstacles, N)
+        X = np.random.choice(self.valid_states, N)
         for t in range(N):
             Z[t] = np.random.choice(list(range(self.obs_size)), 1, p=self.M[X[t], :])
 
@@ -133,12 +133,8 @@ class HMM_Simulator(object):
     def normal_generate(self, N):
         Z = np.zeros(N)
         X = np.zeros(N)
-        if self.obstacles is None:
-            non_obstacles = list(set(range(self.state_size)))
-        else:
-            non_obstacles = list(set(range(self.state_size)) - set(self.obstacles))
 
-        current_state = np.random.choice(non_obstacles, 1)[0]
+        current_state = np.random.choice(self.valid_states, 1)[0]
 
         for t in range(N):
             current_state = np.random.choice(list(range(self.state_size)), 1, p=self.T[current_state, :])[0]
@@ -161,20 +157,44 @@ class HMM_Simulator(object):
         Z_num = np.stack(Z_list)
         return X_num, Z_num
 
+    ## Normalize the T matrix
+    def T_normalize(self):
+        row_sums = self.T.sum(axis=1)
+        self.T = self.T / row_sums[:, np.newaxis]
 
     # Generate the data when there is correlation between more than one past states
     # to the next movement
-    # Correlation structure - everytime the robot moves we select from a new transition matrix
+    # Set up matrix W that correspond to the number of the state,
+    # Each time robot moves to an even state, the transition matrix is perturbed by W
     def corr_generate(self, N):
-        return
+        # Some condition, if this is true, then multiply the transition matrix with W
+        cond = lambda x : x % 2 == 0
+        # Same process as the normal generate
+        Z = np.zeros(N)
+        X = np.zeros(N)
+        current_state = np.random.choice(self.valid_states, 1)[0]
+        # We will use the copy of the transition matrix in order to preserve the T
+        T_corr = np.copy(self.T)
+        
+        for t in range(N):
+            if cond(current_state):
+                W = self.T.copy()
+                
+                W[np.where(W != 0)] = stats.truncnorm.rvs(1, 100, loc=1, scale = 0.01, 
+                                                          size=len(W[np.where(W!=0)]))
+            
+                self.T = self.T * W
+                self.T_normalize()
+            current_state = np.random.choice(list(range(self.state_size)), 1, 
+                                             p=self.T[current_state, :])[0]
+            X[t] = current_state
+            Z[t] = np.random.choice(list(range(self.obs_size)), 1, p=self.M[int(X[t]), :])
+
+        return (X, Z)
 
     def perturb_transition(self):
-        if self.obstacles is None:
-            non_obstacles = list(set(range(self.state_size)))
-        else:
-            non_obstacles = list(set(range(self.state_size)) - set(self.obstacles))
-
-        for s in non_obstacles:
+        
+        for s in self.valid_states:
             new_prob = np.copy(self.T[s, :])
             new_prob[s] = round(np.random.uniform(0.1, 0.3), 2)
             available = np.where(new_prob != 0)[0]
@@ -199,7 +219,8 @@ class HMM_Simulator(object):
         while not valid_map:
             new_M = np.copy(self.M)
             new_T = np.copy(self.T)
-            new_obstacles = sorted(np.random.choice(list(range(self.state_size)), num_obstacles, replace=False))
+            new_obstacles = sorted(np.random.choice(list(range(self.state_size)), 
+                                                    num_obstacles, replace=False))
 
             for o in new_obstacles:
                 contig = sorted(self.find_contiguous_state(o))
@@ -217,6 +238,7 @@ class HMM_Simulator(object):
         self.M = new_M
         self.T = new_T
         self.obstacles = new_obstacles
+        self.valid_states = list(set(range(self.state_size)) - set(self.obstacles))
 
         return
 
@@ -240,12 +262,6 @@ class HMM_Simulator(object):
 
     # Show the map
     def draw_world(self):
-
-        if self.obstacles is None:
-            non_obstacles = list(set(range(self.state_size)))
-        else:
-            non_obstacles = list(set(range(self.state_size)) - set(self.obstacles))
-
         fig = pyplot.figure()
         ax = fig.add_subplot(111)
 
@@ -290,10 +306,37 @@ class HMM_Simulator(object):
                 patch = patches.PathPatch(path, facecolor='black', lw=1)
                 ax.add_patch(patch)
 
-        for s in non_obstacles:
+        for s in self.valid_states:
             x = s % self.map_size
             y = self.map_size - s // self.map_size - 1
             name = self.S_type[s]
             ax.text((x + 0.4) * size, (y + 0.45) * size, name)
-
+            
+        pyplot.savefig("mapping.png")
         pyplot.show()
+        
+        
+    # function that generates the data in the txt format
+    # Save the observation and the true states in a separate file.
+    # Generate the data in 3 different ways (Normal, Random and Correlated)
+    def generate_txt(self, steps, seq_n, name):
+        
+        normal_seq = h.multi_generate(N = steps, num = seq_n, path_type = "normal_generate")
+        random_seq = h.multi_generate(N = steps, num = seq_n, path_type = "random_generate")
+        corr_seq = h.multi_generate(N = steps, num = seq_n, path_type = "corr_generate")
+        
+        np.savetxt("{}_normal_state.txt".format(name), X = normal_seq[0], 
+                   delimiter=" ", newline="\n;\n", fmt='%1.0i')
+        np.savetxt("{}_normal_obs.txt".format(name), X = normal_seq[1], 
+                   delimiter=" ", newline="\n;\n", fmt='%1.0i')
+        np.savetxt("{}_random_state.txt".format(name), X = random_seq[0], 
+                   delimiter=" ", newline="\n;\n", fmt='%1.0i')
+        np.savetxt("{}_random_obs.txt".format(name), X = random_seq[1], 
+                   delimiter=" ", newline="\n;\n", fmt='%1.0i')
+        np.savetxt("{}_corr_state.txt".format(name), X = corr_seq[0], 
+                   delimiter=" ", newline="\n;\n", fmt='%1.0i')
+        np.savetxt("{}_corr_obs.txt".format(name), X = corr_seq[1], 
+                   delimiter=" ", newline="\n;\n", fmt='%1.0i')
+        
+        return
+        

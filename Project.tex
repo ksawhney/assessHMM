@@ -26,7 +26,7 @@
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
 
-\title{Formatting instructions for NeurIPS 2018}
+\title{Empirical Assessment of HMM and HSMM Accuracy}
 
 % The \author macro works with any number of authors. There are two commands
 % used to separate the names and addresses of multiple authors: \And and \AND.
@@ -37,13 +37,8 @@
 % \AND instead of \And before the third author name.
 
 \author{%
-  David S.~Hippocampus\thanks{Use footnote for providing further information
-    about author (webpage, alternative address)---\emph{not} for acknowledging
-    funding agencies.} \\
-  Department of Computer Science\\
-  Cranberry-Lemon University\\
-  Pittsburgh, PA 15213 \\
-  \texttt{hippo@cs.cranberry-lemon.edu} \\
+  Albert Lam, Kabir Sawhney, and Joey Yoo \\
+  \texttt{albertlam, ksawhney, joeyyoo@uchicago.edu} \\
   % examples of more authors
   % \And
   % Coauthor \\
@@ -73,102 +68,41 @@
 \maketitle
 
 \begin{abstract}
-  The abstract paragraph should be indented \nicefrac{1}{2}~inch (3~picas) on
-  both the left- and right-hand margins. Use 10~point type, with a vertical
-  spacing (leading) of 11~points.  The word \textbf{Abstract} must be centered,
-  bold, and in point size 12. Two line spaces precede the abstract. The abstract
-  must be limited to one paragraph.
+	We empirically compare the accuracy of the Baum-Welch and Viterbi algorithms and the Hidden Semi-Markov Model algorithm to estimate hidden state sequences from time-ordered observations. To do so, we simulate data on robot pathways in a variety of different GridWorld settings, including altering the size of the grid, the placement of the obstacles, and the behavior of the agent as it moves through the grid (including settings which violate the Markov assumption). We found that (to be filled in)
 \end{abstract}
 
-\section{Submission of papers to NeurIPS 2018}
+\section{Background and Introduction}
 
-NeurIPS requires electronic submissions.  The electronic submission site is
-\begin{center}
-  \url{https://cmt.research.microsoft.com/NeurIPS2018/}
-\end{center}
+Algorithms to estimate the most likely sequence of hidden states from observations in a hidden Markov model rely on the Markov assumption, that future states are conditionally independent of past states given the present state. The most popular method for estimating these states, evaluating conditional likelihood using the forward-backward algorithm then inferring the most likely sequence of hidden states using the Viterbi algorithm, relies on this assumption. However, some researchers have suggested that the Markov assumption need not be strictly met for these techniques to generate reasonably accurate estimates of hidden state sequences. We sought to empirically test this proposition on the problem of estimating a robot's path in a GridWorld setting. To do so, we randomly generated a sequence of robot movements and observations under a variety of assumptions, including settings where we enforced the Markov assumption and others where we relaxed it.
 
-Please read the instructions below carefully and follow them faithfully.
+\subsection{Hidden Semi-Markov Model}
 
-\subsection{Style}
 
-Papers to be submitted to NeurIPS 2018 must be prepared according to the
-instructions presented here. Papers may only be up to eight pages long,
-including figures. Additional pages \emph{containing only acknowledgments and/or
-  cited references} are allowed. Papers that exceed eight pages of content
-(ignoring references) will not be reviewed, or in any other way considered for
-presentation at the conference.
 
-The margins in 2018 are the same as since 2007, which allow for $\sim$$15\%$
-more words in the paper compared to earlier years.
 
-Authors are required to use the NeurIPS \LaTeX{} style files obtainable at the
-NeurIPS website as indicated below. Please make sure you use the current files
-and not previous versions. Tweaking the style files may be grounds for
-rejection.
 
-\subsection{Retrieval of style files}
-
-The style files for NeurIPS and other conference information are available on
-the World Wide Web at
-\begin{center}
-  \url{http://www.neurips.cc/}
-\end{center}
-The file \verb+neurips_2018.pdf+ contains these instructions and illustrates the
-various formatting requirements your NeurIPS paper must satisfy.
-
-The only supported style file for NeurIPS 2018 is \verb+neurips_2018.sty+,
-rewritten for \LaTeXe{}.  \textbf{Previous style files for \LaTeX{} 2.09,
-  Microsoft Word, and RTF are no longer supported!}
-
-The \LaTeX{} style file contains three optional arguments: \verb+final+, which
-creates a camera-ready copy, \verb+preprint+, which creates a preprint for
-submission to, e.g., arXiv, and \verb+nonatbib+, which will not load the
-\verb+natbib+ package for you in case of package clash.
 
 \paragraph{New preprint option for 2018}
-If you wish to post a preprint of your work online, e.g., on arXiv, using the
-NeurIPS style, please use the \verb+preprint+ option. This will create a
-nonanonymized version of your work with the text ``Preprint. Work in progress.''
-in the footer. This version may be distributed as you see fit. Please \textbf{do
-  not} use the \verb+final+ option, which should \textbf{only} be used for
-papers accepted to NeurIPS.
 
-At submission time, please omit the \verb+final+ and \verb+preprint+
-options. This will anonymize your submission and add line numbers to aid
-review. Please do \emph{not} refer to these line numbers in your paper as they
-will be removed during generation of camera-ready copies.
 
-The file \verb+neurips_2018.tex+ may be used as a ``shell'' for writing your
-paper. All you have to do is replace the author, title, abstract, and text of
-the paper with your own.
 
-The formatting instructions contained in these style files are summarized in
-Sections \ref{gen_inst}, \ref{headings}, and \ref{others} below.
+\section{Simulating Robot States and Observations}
 
-\section{General formatting instructions}
-\label{gen_inst}
+To generate the simulated robot pathways and observations, we varied the following settings and assumptions of the map and robot motion model:
 
-The text must be confined within a rectangle 5.5~inches (33~picas) wide and
-9~inches (54~picas) long. The left margin is 1.5~inch (9~picas).  Use 10~point
-type with a vertical spacing (leading) of 11~points.  Times New Roman is the
-preferred typeface throughout, and will be selected for you by default.
-Paragraphs are separated by \nicefrac{1}{2}~line space (5.5 points), with no
-indentation.
+\begin{enumerate}
+	\item \textbf{Map size}: We generated pathways using 4x4 and 5x5-size grids. The former has a total of 16 hidden states and the latter had 25 hidden states.
+	\item \textbf{Obstacles}: For both map sizes, we placed obstacles in the map by making certain states in the grid impossible to visit -- this represents the robot encountering real-life obstacles, like walls or other objects. We varied the number and placement of obstacles in each map. We believe that increasing the number of obstacles will increase the accuracy of the estimation methods, as there are fewer possible paths for the robot to take.
+	\item \textbf{Markov property}: We simulated three different settings for the transition matrix between states, two of which did not violate the Markov assumption and one that did. Further details of these settings are Section 2.2 below.
+\end{enumerate}
 
-The paper title should be 17~point, initial caps/lower case, bold, centered
-between two horizontal rules. The top rule should be 4~points thick and the
-bottom rule should be 1~point thick. Allow \nicefrac{1}{4}~inch space above and
-below the title to rules. All pages should start at 1~inch (6~picas) from the
-top of the page.
+\subsection{GridWorld Setup}
 
-For the final version, authors' names are set in boldface, and each name is
-centered above the corresponding address. The lead author's name is to be listed
-first (left-most), and the co-authors' names (if different address) are set to
-follow. If there is only one co-author, list both author and co-author side by
-side.
+We simulated the robot pathways on the following three grids:
+(place grid figures here)
 
-Please pay special attention to the instructions in Section \ref{others}
-regarding figures, tables, acknowledgments, and references.
+\subsection{Robot Motion Settings}
+
 
 \section{Headings: first level}
 \label{headings}

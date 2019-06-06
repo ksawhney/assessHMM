@@ -103,6 +103,20 @@ We simulated the robot pathways on the following three grids:
 
 \subsection{Robot Motion Settings}
 
+As stated above, the robot path for each grid was simulated using three different settings for the transitions between states.
+
+\begin{enumerate}
+	\item \textbf{Purely random}: The robot randomly transitions from state to state, with a uniform transition probability over all of the states (including its current state). Therefore, the state sequence is essentially purely random, with each step randomly generated with replacement from the set of available states. This setting satisfies the Markov property, as each time step is independent from all other time steps.
+	\item \textbf{Traditional Markov}: The state sequences are generated using a fixed transition matrix -- the probability of transitioning from one state to the next is constant as the sequence is generated (with one state selected as the starting state), and each step is independent of past states conditional on the present state. This setting satisfies the Markov property, so we would expect the HMM method to do well on the data simulated from it, in both estimating the transition probability matrix and in the accuracy of the maximum likelihood state sequence.
+	\item \textbf{Changing transition matrix}: First, we generated four separate transition matrices for the grid. At each time step, the transition matrix used to set the transition probabilities is randomly chosen from this set of matrices. The transition probabilities to the next state will depend both on the present state and which of the four matrices is randomly chosen. This setting violates the Markov property, as the probability of each state transition is not entirely dependent on the present state. We are most interested to see how the HMM and HSMM methods perform in estimating the hidden state sequence in this setting, compared to the Traditional Markov setting.
+ \end{enumerate}
+
+\subsection{Robot Observation Settings}
+
+We used the same observation model for all three state transition settings. Each state had four possible observations -- in a realistic setting, these could be colors or features, but we simply assigned a value of 0, 1, 2, or 3 to each observation. For each set of simulations, we initialized a random emission matrix with a uniformly assigned probability between 0.7 and 0.9 on the "true" observed value for each state, with the remaining probability divided evenly between the other three observed valued.
+
+To generate our data, for each of the 9 settings (3 grids x 3 transition settings), we simulated 200 state sequences of varying lengths. Then, we simulated observations from these state sequences using the randomly generated emission matrices (the "true" observation for each state was also randomly assigned). These generated observation sequences then became the input for our HMM and HSMM algorithms.
+
 
 \section{Headings: first level}
 \label{headings}

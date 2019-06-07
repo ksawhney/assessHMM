@@ -25,6 +25,8 @@
 \usepackage{amsfonts}       % blackboard math symbols
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
+\usepackage{graphicx}
+\usepackage{float}
 
 \title{Empirical Assessment of HMM and HSMM Accuracy}
 
@@ -78,10 +80,6 @@ Algorithms to estimate the most likely sequence of hidden states from observatio
 \subsection{Hidden Semi-Markov Model}
 
 
-
-
-
-
 \paragraph{New preprint option for 2018}
 
 
@@ -98,8 +96,14 @@ To generate the simulated robot pathways and observations, we varied the followi
 
 \subsection{GridWorld Setup}
 
-We simulated the robot pathways on the following three grids:
-(place grid figures here)
+We simulated the robot pathways on the following three grids. Each square in the grid either has a number representing its true observation, or is colored black, indicating an obstacle.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{data/Profile_1/mapping.png}
+	% \fbox{\rule[-.5cm]{0cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
+	% \caption{Sample figure caption.}
+\end{figure}
 
 \subsection{Robot Motion Settings}
 

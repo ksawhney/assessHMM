@@ -25,9 +25,8 @@
 \usepackage{amsfonts}       % blackboard math symbols
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
-\usepackage{graphicx}
-\usepackage{float}
 
+\usepackage{amsmath}
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
 \usepackage{graphicx}
@@ -123,8 +122,21 @@ We simulated the robot pathways on the following three grids. Each square in the
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.8\linewidth]{data/Profile_1/mapping.png}
+	\caption{Grid 1}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
 	% \fbox{\rule[-.5cm]{0cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
-	% \caption{Sample figure caption.}
+	
+	\includegraphics[width=0.8\linewidth]{data/Profile_2/mapping.png}
+	\caption{Grid 2}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{data/Profile_3/mapping.png}
+	\caption{Grid 3}
 \end{figure}
 
 \subsection{Robot Motion Settings}

@@ -110,7 +110,7 @@ A HSMM extends a HMM to settings where the sequence of states are not strictly M
 To generate the simulated robot pathways and observations, we varied the following settings and assumptions of the map and robot motion model:
 
 \begin{enumerate}
-	\item \textbf{Map size}: We generated pathways using 4x4 and 5x5-size grids. The former has a total of 16 hidden states and the latter had 25 hidden states.
+	\item \textbf{Map size}: We generated pathways using 5$\times$5-size grids, so each grid had a total of 25 hidden states.
 	\item \textbf{Obstacles}: For both map sizes, we placed obstacles in the map by making certain states in the grid impossible to visit -- this represents the robot encountering real-life obstacles, like walls or other objects. We varied the number and placement of obstacles in each map. We believe that increasing the number of obstacles will increase the accuracy of the estimation methods, as there are fewer possible paths for the robot to take.
 	\item \textbf{Markov property}: We simulated three different settings for the transition matrix between states, two of which did not violate the Markov assumption and one that did. Further details of these settings are Section 2.2 below.
 \end{enumerate}

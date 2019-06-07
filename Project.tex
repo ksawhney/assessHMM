@@ -25,6 +25,8 @@
 \usepackage{amsfonts}       % blackboard math symbols
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
+\usepackage{graphicx}
+\usepackage{float}
 
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -90,6 +92,7 @@ A HMM is a model consisting of two sequences:
 
 The relationship between these two sequences are embedded in the transition probabilities and the emission probabilities of the HMM. In particular, let $\pi_{i,j} = \mathbb{P}(z_{t+1} = j | z_{t} = i)$ denote the probability of an agent transitioning from state $i$ to state $j$, which we assume to be independent of $t$, and $\mathbb{P}(z_t = \zeta | x_t = \xi)$ denote the probability of observing $\zeta$ given state $\xi$. Interpreting these probabilities as parameters of the HMM gives way to a natural Bayesian approach to estimating these probabilities that involves augmenting and then marginalizing the joint distributions of $x$ and $z$, solving for forward and backward recursions, and then computing the maximum likelihood estimates via the Baum Welch algorithm. The transition and emission probabilities can finally be used to compute most-likely trajectories using the Viterbi algorithm.
 
+
 \subsection{HSMMs}
 A HSMM extends a HMM to settings where the sequence of states are not strictly Markovian - instead, the probability of transitioning to a new state depends on the elapsed time in the current state. Let $D_t$ denote the duration of a state that is entered at time $t$ with explicit mass function $\mathbb{P}(D_t = d_t | z_t = i)$. Figure 1 depicts a explicit-duration HSMM where the number of
 
@@ -98,9 +101,6 @@ A HSMM extends a HMM to settings where the sequence of states are not strictly M
 \includegraphics[scale=0.6]{images/hsmm.png}
 \caption{1}
 \end{figure}
-
-
-
 
 \paragraph{New preprint option for 2018}
 
@@ -118,8 +118,14 @@ To generate the simulated robot pathways and observations, we varied the followi
 
 \subsection{GridWorld Setup}
 
-We simulated the robot pathways on the following three grids:
-(place grid figures here)
+We simulated the robot pathways on the following three grids. Each square in the grid either has a number representing its true observation, or is colored black, indicating an obstacle.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{data/Profile_1/mapping.png}
+	% \fbox{\rule[-.5cm]{0cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
+	% \caption{Sample figure caption.}
+\end{figure}
 
 \subsection{Robot Motion Settings}
 

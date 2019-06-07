@@ -158,9 +158,10 @@ class HMM_Simulator(object):
         return X_num, Z_num
 
     ## Normalize the T matrix
-    def T_normalize(self):
-        row_sums = self.T.sum(axis=1)
-        self.T = self.T / row_sums[:, np.newaxis]
+    def T_normalize(T):
+        row_sums = T.sum(axis=1)
+        T = T / row_sums[:, np.newaxis]
+        return T
 
     # Generate the data when there is correlation between more than one past states
     # to the next movement
@@ -178,15 +179,15 @@ class HMM_Simulator(object):
         
         for t in range(N):
             if cond(current_state):
-                W = self.T.copy()
+                W = np.copy(T_corr)
                 
                 W[np.where(W != 0)] = stats.truncnorm.rvs(1, 100, loc=1, scale = 0.01, 
                                                           size=len(W[np.where(W!=0)]))
-            
-                self.T = self.T * W
-                self.T_normalize()
+                
+                T_corr = T_corr * W
+                T_normalize(T_corr)
             current_state = np.random.choice(list(range(self.state_size)), 1, 
-                                             p=self.T[current_state, :])[0]
+                                             p=T_corr[current_state, :])[0]
             X[t] = current_state
             Z[t] = np.random.choice(list(range(self.obs_size)), 1, p=self.M[int(X[t]), :])
 

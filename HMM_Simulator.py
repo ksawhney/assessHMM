@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as pyplot
 from matplotlib.path import Path
 import matplotlib.patches as patches
-
+import scipy.stats as stats
 
 class HMM_Simulator(object):
 
@@ -124,7 +124,7 @@ class HMM_Simulator(object):
         for t in range(N):
             Z[t] = np.random.choice(list(range(self.obs_size)), 1, p=self.M[X[t], :])
 
-        return (X, Z)
+        return X, Z
 
     # Generate the data according to the transition matrix,
     # The robot moves one state at a time and observe one observation at a time
@@ -141,7 +141,7 @@ class HMM_Simulator(object):
             X[t] = current_state
             Z[t] = np.random.choice(list(range(self.obs_size)), 1, p=self.M[int(X[t]), :])
 
-        return (X, Z)
+        return X, Z
 
     # Generate array of multiple trajectories
     # Returns two arrays (X_num, Z_num) of shape num x N
@@ -157,7 +157,8 @@ class HMM_Simulator(object):
         Z_num = np.stack(Z_list)
         return X_num, Z_num
 
-    ## Normalize the T matrix
+    # Normalize the T matrix
+    @staticmethod
     def T_normalize(T):
         row_sums = T.sum(axis=1)
         T = T / row_sums[:, np.newaxis]
@@ -185,13 +186,13 @@ class HMM_Simulator(object):
                                                           size=len(W[np.where(W!=0)]))
                 
                 T_corr = T_corr * W
-                T_normalize(T_corr)
+                HMM_Simulator.T_normalize(T_corr)
             current_state = np.random.choice(list(range(self.state_size)), 1, 
                                              p=T_corr[current_state, :])[0]
             X[t] = current_state
             Z[t] = np.random.choice(list(range(self.obs_size)), 1, p=self.M[int(X[t]), :])
 
-        return (X, Z)
+        return X, Z
 
     def perturb_transition(self):
         
@@ -322,9 +323,9 @@ class HMM_Simulator(object):
     # Generate the data in 3 different ways (Normal, Random and Correlated)
     def generate_txt(self, steps, seq_n, name):
         
-        normal_seq = h.multi_generate(N = steps, num = seq_n, path_type = "normal_generate")
-        random_seq = h.multi_generate(N = steps, num = seq_n, path_type = "random_generate")
-        corr_seq = h.multi_generate(N = steps, num = seq_n, path_type = "corr_generate")
+        normal_seq = self.multi_generate(N = steps, num = seq_n, path_type = "normal_generate")
+        random_seq = self.multi_generate(N = steps, num = seq_n, path_type = "random_generate")
+        corr_seq = self.multi_generate(N = steps, num = seq_n, path_type = "corr_generate")
         
         np.savetxt("{}_normal_state.txt".format(name), X = normal_seq[0], 
                    delimiter=" ", newline="\n;\n", fmt='%1.0i')

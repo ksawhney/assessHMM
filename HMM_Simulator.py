@@ -270,7 +270,8 @@ class HMM_Simulator(object):
         
         for s in self.valid_states:
             new_prob = np.copy(self.T[s, :])
-            new_prob[s] = round(np.random.uniform(0.1, 0.3), 2)
+            # new_prob[s] = round(np.random.uniform(0.15, 0.25), 2)
+            new_prob[s] = new_prob[s] + round(np.random.uniform(-0.1, 0.1), 2)
             available = np.where(new_prob != 0)[0]
             # Perturb the prob of staying in by uniform
             diff = (self.T[s, s] - new_prob[s]) / (len(available) - 1)
@@ -334,7 +335,7 @@ class HMM_Simulator(object):
         return (contiguous)
 
     # Show the map
-    def draw_world(self, map_name):
+    def draw_world(self, map_name = None):
         fig = pyplot.figure()
         ax = fig.add_subplot(111)
 
@@ -385,7 +386,8 @@ class HMM_Simulator(object):
             name = self.S_type[s]
             ax.text((x + 0.4) * size, (y + 0.45) * size, name)
             
-        pyplot.savefig("{}.png".format(map_name))
+        if map_name is not None:
+            pyplot.savefig("{}.png".format(map_name))
         pyplot.show()
         
         

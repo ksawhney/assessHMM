@@ -266,12 +266,14 @@ class HMM_Simulator(object):
         Z_num = np.stack(Z_list)
         return X_num, Z_num
 
-    def perturb_transition(self):
+    # Perturb the transition matrix with uniform random numbers
+    # The perturb_transition is parametized with a, b which indicates lower/upper bound for uniform
+    def perturb_transition(self, a, b):
         
         for s in self.valid_states:
             new_prob = np.copy(self.T[s, :])
             # new_prob[s] = round(np.random.uniform(0.15, 0.25), 2)
-            new_prob[s] = new_prob[s] + round(np.random.uniform(-0.1, 0.1), 2)
+            new_prob[s] = new_prob[s] + round(np.random.uniform(a, b), 2)
             available = np.where(new_prob != 0)[0]
             # Perturb the prob of staying in by uniform
             diff = (self.T[s, s] - new_prob[s]) / (len(available) - 1)
@@ -418,23 +420,23 @@ class HMM_Simulator(object):
 if __name__ == '__main__':
     # Build State cases - Map Description
     # Profile 1 - Size: 5x5, Obs_size: 4, no obstacle
-    h = HMM_Simulator(seed = 123, sigma = 0.5, map_size = 5, obs_size = 4)
-    h.perturb_transition()
+    h = HMM_Simulator(seed = 123, sigma = 0.5, map_size = 5, obs_size = 8)
+    h.perturb_transition(-0.1, 0.1)
     h.draw_world("5x5;4;free")
     h.generate_txt(seq_n = 10, steps = 200, name = "5x5;4;free")
     
     # Build State cases - Map Description
     # Profile 2 - Size: 5x5, Obs_size: 4, 6 obstacles
     # Obstacles create some sort of loop
-    h = HMM_Simulator(seed = 123, sigma = 0.5, map_size = 5, obs_size = 4, obstacles=[4, 6, 7, 12, 19, 20])
-    h.perturb_transition()
+    h = HMM_Simulator(seed = 123, sigma = 0.5, map_size = 5, obs_size = 8, obstacles=[4, 6, 7, 12, 19, 20])
+    h.perturb_transition(-0.1, 0.1)
     h.draw_world("5x5;4;6box")
     h.generate_txt(seq_n = 10, steps = 200, name = "5x5;4;6box")
 
     # Build State cases - Map Description
     # Profile 3 - Size: 5x5, Obs_size: 4, 6 obstacles
     # Separated World
-    h = HMM_Simulator(seed = 123, sigma = 0.5, map_size = 5, obs_size = 4, obstacles=[9,10,11,12,14,16])
-    h.perturb_transition()
+    h = HMM_Simulator(seed = 123, sigma = 0.5, map_size = 5, obs_size = 8, obstacles=[9,10,11,12,14,16])
+    h.perturb_transition(-0.1, 0.1)
     h.draw_world("5x5;4;6sep")
     h.generate_txt(seq_n = 10, steps = 200, name = "5x5;4;6sep")

@@ -93,43 +93,16 @@ A HMM is a model consisting of two sequences:
 The relationship between these two sequences are embedded in the transition probabilities and the emission probabilities of the HMM. In particular, let $\pi_{i,j} = \mathbb{P}(z_{t+1} = j | z_{t} = i)$ denote the probability of an agent transitioning from state $i$ to state $j$, which we assume to be independent of $t$, and $\mathbb{P}(z_t = \zeta | x_t = \xi)$ denote the probability of observing $\zeta$ given state $\xi$. Interpreting these probabilities as parameters of the HMM gives way to a natural parametric Bayesian approach to estimating these probabilities that involves augmenting and then marginalizing the joint distributions of $x$ and $z$, solving for forward and backward recursions, and then computing the maximum likelihood estimates via the Baum Welch algorithm. The transition and emission probabilities can finally be used to compute most-likely trajectories using the Viterbi algorithm.
 
 \subsection{Hidden Semi-Markov Model (HSMM)}
-A HSMM extends a HMM to settings where the sequence of states are not strictly Markovian - instead, the probability of transitioning to a new state $z_{s+1}$ depends on the elapsed time in the current state $z_s$. Here, we introduce $s = 1, \dots, S$ to index state transitions that remain Markovian, and use $t= 1, \dots, T$ to index the associated emissions that are not necessarily Markovian. Then, let $D_s \in [1, \dots, T]$ denote the duration that an agent remains in state $x_s$ with explicit mass function $\mathbb{P}(D_s = d_s | z_s = i)$. Figure ~\ref{fig:hsmm} illustrates such an explicit-duration HSMM, where we define $z_s$ as super-states of sub-states $z'_{t}$ which each emit one observation $x_{t}$. It follows that the super-states are Markovian but sub-states are not.
+A HSMM extends a HMM to settings where the sequence of states are not strictly Markovian - instead, the probability of transitioning to a new state $z_{s+1}$ depends on the elapsed time in the current state $z_s$. Here, we introduce $s = 1, \dots, S$ to index state transitions that remain Markovian, and use $t= 1, \dots, T$ to index the associated emissions that are not necessarily Markovian. Then, let $D_s \in [1, \dots, T]$ denote the duration that an agent remains in state $x_s$ with explicit mass function $\mathbb{P}(D_s = d_s | z_s = i)$. Figure 1 illustrates such an explicit-duration HSMM.
 
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.15]{images/hsmm2.png}
-\caption{HSMM where super state transitions are Markovian, while emissions associated with each state follow some explicit duration distribution.}
-\label{fig:hsmm}
+\includegraphics[scale=0.15]{images/hsmm.png}
+\caption{HSMM where state transitions are Markovian, while emissions associated with each state follow some explicit duration distribution.}
 \end{figure}
 
-\subsection{Hierarchical Dirichlet Process HSMM (HDP-HSMM)}
-We begin this section by reviewing the formulation of a hierarchical Dirichlet process HMM (HDP-HMM), which is a Bayesian non-parametric treatment of the classical HMM. A HDP-HMM$(\gamma, \alpha, H)$ model is a process governed by:
-\begin{itemize}
-  \item $\beta_k \coloneqq \beta_k'\cdot \prod_{i=1}^{k-1} (1-\beta_i')$ where $\beta_i' \overset{\text{i.i.d}}{\sim} Beta(1,\gamma)$
-  \item $\pi_k \overset{\text{i.i.d}}{\sim} DP(H(\beta), \alpha)$ for $k = 1, \dots, \infty$ where $\beta = \{\beta_k\}_{k=1}^{\infty}$
-  \item $z_t \sim \pi_{z_{t-1}}$
-  \item $x_t \sim h(\theta_{z_t})$ where $\theta_{k} \sim H$ for $k = 1, \dots, \infty$
-\end{itemize}
-where $\gamma, \alpha > 0$ can be interpreted as concentration parameters and $H$ is the base distribution of the Dirichlet process. Note that $\{\beta_k\}_{k=1}^{\infty}$ is generated from a stick-breaking process with concentration parameter $\gamma$. These are then used in the generation of  transition distributions $\{\pi_k \}_{k=1}^{\infty}$ from a Dirichlet process with parameters $H$ and $\alpha$, where $H$ is defined on the $\{\beta_k\}_{k=1}^{\infty}$ partitions of the measurement set. For $t = 1, \dots, T$, each state $z_t$ is drawn from a respective $\pi_{z_{t-1}}$, and each observation is drawn from an observation distribution $h(\theta_{z_t})$ where $\theta_{k}$ is drawn from $H$. Observe that as $\alpha$ decreases, distributions $\{\pi_k\}_{s=1}^{\infty}$ tend to be more concentrated, and as $\gamma$ decreases, $\{\beta_k\}_{k=1}^{\infty}$ tends to zero and $\{h(\theta_{z_t})\}_{t=1}^{T}$ tends to be more concentrated as a result.
+% \paragraph{New preprint option for 2018}
 
-HDP-HSMM is an augmentation of the HDP-HMM to include duration distributions. Continuing from the notation above yields:
-\begin{itemize}
-  \item $\beta_k \coloneqq \beta_k'\cdot \prod_{i=1}^{k-1} (1-\beta_i')$ where $\beta_i' \overset{\text{i.i.d}}{\sim} Beta(1,\gamma)$
-  \item $\pi_k \overset{\text{i.i.d}}{\sim} DP(H(\beta), \alpha)$ for $k = 1, \dots, \infty$ where $\beta = \{\beta_k\}_{k=1}^{\infty}$
-  \item $z_s \sim \tilde{\pi}_{z_{s-1}}$
-  \item $D_s \sim g(\omega_{z_s})$ where $\omega_k \sim G$ for $k = 1, \dots, \infty$
-  \item $z'_{t_{s}:t'_{s}} = z_s$ where $t_{s} = \sum_{s' < s} D_s + 1$ and $t'_{s} = t_{s} + D_s - 1$
-  \item $x_{t_{s}: t'_{s}} \overset{\text{i.i.d}}{\sim} h(\theta_{z'_t})$ where $\theta_{k} \sim H$ for $k = 1, \dots, \infty$
-\end{itemize}
-
-The main differences here are that we introduce a base distribution $G$ for drawing durations $D_s$ in a similar way that $H$ is defined in the HSMM setting which we use for drawing $\pi$. The duration distribution sequence of sub-states $z'_{t_{s}:t'_{s}}$ is set to the corresponding super-state $z_{s}$ where $t_{s}$ is the starting index for the sub-state sequence corresponding to super-state $z_s$, and $t'_{s}$ is the end index for the sub-state sequence corresponding to super-state $z_s$. The observation sequence is then drawn from the sub-state sequence using $H$. Note that $z_s$ is drawn from $\tilde{pi}_{k} \coloneqq \frac{\pi_{k,j}}{1-\pi_{k,k}}(1 - \delta_{k,j})$, which normalizes $\pi_k$ to prevent self-transitions in the super-state sequence $z_s$. Figure ~\ref{fig:hdphsmm} extends the previous HSMM diagram to illustrate the connections between the HDP component of the model, and the HSMM.
-
-\begin{figure}[H]
-\centering
-\includegraphics[scale=0.12]{images/hdphsmm.png}
-\caption{HDP-HSMM incorporates a HDP component into a HSMM}
-\label{fig:hdphsmm}
-\end{figure}
 
 \section{Simulating Robot States and Observations}
 
@@ -172,12 +145,12 @@ As stated above, the robot path for each grid was simulated using three differen
 \begin{enumerate}
 	\item \textbf{Purely random}: The robot randomly transitions from state to state, with a uniform transition probability over all of the states (including its current state). Therefore, the state sequence is essentially purely random, with each step randomly generated with replacement from the set of available states. This setting satisfies the Markov property, as each time step is independent from all other time steps.
 	\item \textbf{Traditional Markov}: The state sequences are generated using a fixed transition matrix -- the probability of transitioning from one state to the next is constant as the sequence is generated (with one state selected as the starting state), and each step is independent of past states conditional on the present state. This setting satisfies the Markov property, so we would expect the HMM method to do well on the data simulated from it, in both estimating the transition probability matrix and in the accuracy of the maximum likelihood state sequence.
-	\item \textbf{Changing transition matrix}: First, we generated four separate transition matrices for the grid. At each time step, the transition matrix used to set the transition probabilities is randomly chosen from this set of matrices. The transition probabilities to the next state will depend both on the present state and which of the four matrices is randomly chosen. This setting violates the Markov property, as the probability of each state transition is not entirely dependent on the present state. We are most interested to see how the HMM and HSMM methods perform in estimating the hidden state sequence in this setting, compared to the Traditional Markov setting.
+	\item \textbf{Changing transition matrix (Stickiness}: HSMM specializes in inferring the observations when the transition is sticky. Sticky property is where the transition probability changes relative to how long the robot stays in the same state. The transition probability of staying in the same state decreases linearly by the number of time the robot is in the same state. If the robot moves to a different state, the transition matrix returns to the original one that we started from.
  \end{enumerate}
 
 \subsection{Robot Observation Settings}
 
-We used the same observation model for all three state transition settings. Each state had four possible observations -- in a realistic setting, these could be colors or features, but we simply assigned a value of 0, 1, 2, or 3 to each observation. For each set of simulations, we initialized a random emission matrix with a uniformly assigned probability between 0.7 and 0.9 on the "true" observed value for each state, with the remaining probability divided evenly between the other three observed valued.
+To compare the original HMM and HSMM together, we have modified the observation to be continuous. Each state is distinguished by its distinct mean, while the sigma is initialized to be the same across all state. The mean value is similar to the discrete setting, the value of 0, 1, 2, or 3. In each state, the robot observes a normal sample given the mu of the state.
 
 To generate our data, for each of the 9 settings (3 grids x 3 transition settings), we simulated 200 state sequences of varying lengths. Then, we simulated observations from these state sequences using the randomly generated emission matrices (the "true" observation for each state was also randomly assigned). These generated observation sequences then became the input for our HMM and HSMM algorithms.
 

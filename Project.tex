@@ -145,25 +145,19 @@ To generate the simulated agent pathways and observations, we varied the followi
 
 We simulated the robot pathways on the following three grids. Each square in the grid either has a number representing its true observation, or is colored black, indicating an obstacle.
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.8\linewidth]{data/Profile_1/mapping.png}
-	\caption{Grid 1}
-\end{figure}
+\newcommand{\addmapa}{\includegraphics[width=10em]{data/Profile_1/mapping.png}}
+\newcommand{\addmapb}{\includegraphics[width=10em]{data/Profile_2/mapping.png}}
+\newcommand{\addmapc}{\includegraphics[width=10em]{data/Profile_3/mapping.png}}
+\newcolumntype{C}{>{\centering\arraybackslash}m{10em}}
+\begin{table}[H]
+\sffamily
+\centering
+\begin{tabular}{l*4{C}@{}}
+& \addmapa & \addmapb & \addmapc \\
+\end{tabular}
+\caption{Gridworld models}
+\end{table} 
 
-\begin{figure}[H]
-	\centering
-	% \fbox{\rule[-.5cm]{0cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
-
-	\includegraphics[width=0.8\linewidth]{data/Profile_2/mapping.png}
-	\caption{Grid 2}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.8\linewidth]{data/Profile_3/mapping.png}
-	\caption{Grid 3}
-\end{figure}
 
 \subsection{Robot Motion Settings}
 
@@ -398,17 +392,7 @@ when listing the references. {\bf Remember that you can use more than eight
 
 \small
 
-[1] Alexander, J.A.\ \& Mozer, M.C.\ (1995) Template-based algorithms for
-connectionist rule extraction. In G.\ Tesauro, D.S.\ Touretzky and T.K.\ Leen
-(eds.), {\it Advances in Neural Information Processing Systems 7},
-pp.\ 609--616. Cambridge, MA: MIT Press.
-
-[2] Bower, J.M.\ \& Beeman, D.\ (1995) {\it The Book of GENESIS: Exploring
-  Realistic Neural Models with the GEneral NEural SImulation System.}  New York:
-TELOS/Springer--Verlag.
-
-[3] Hasselmo, M.E., Schnell, E.\ \& Barkai, E.\ (1995) Dynamics of learning and
-recall at excitatory recurrent synapses and cholinergic modulation in rat
-hippocampal region CA3. {\it Journal of Neuroscience} {\bf 15}(7):5249-5262.
+[1] Johnson, M.J.\ \& Willsky, A.S.\ (2013) Bayesian Nonparametric Hidden Semi-Markov Models, {\it Journal of Machine Learning Research 14 (2013)},
+pp.\ 673--701. Cambridge, MA: MIT Press.
 
 \end{document}

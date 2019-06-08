@@ -86,31 +86,58 @@ Algorithms to estimate the most likely sequence of hidden states from observatio
 \subsection{Hidden Markov Model (HMM)}
 A HMM is a model consisting of two sequences:
 \begin{itemize}
-  \item A state sequence $z = \{z_1, z_2, \dots, z_T\}$ where $z_t$ is the state at timestep $t$ which takes a value from a state space $\mathcal{Z}$ that is assumed to be static and finite for $t = 1, 2, \dots, T$
-  \item An observation (or emission) sequence $x = \{x_1, x_2, \dots, x_T\}$ where $x_t$ is the observation at timestep $t$ from an observation space $\mathcal{X}$ that is assumed to be static and finite for $t = 1, 2, \dots, T$
+  \item A state sequence $z = \{z_1, z_2, \dots, z_T\}$ where $z_t$ is the state at timestep $t$ which takes a value from a state space $\mathcal{Z}$ that is assumed to be static and finite for $t = 1, 2, \dots, T$.
+  \item An observation (or emission) sequence $x = \{x_1, x_2, \dots, x_T\}$ where $x_t$ is the observation at timestep $t$ from an observation space $\mathcal{X}$ that is assumed to be static and finite for $t = 1, 2, \dots, T$.
 \end{itemize}
 
 The relationship between these two sequences are embedded in the transition probabilities and the emission probabilities of the HMM. In particular, let $\pi_{i,j} = \mathbb{P}(z_{t+1} = j | z_{t} = i)$ denote the probability of an agent transitioning from state $i$ to state $j$, which we assume to be independent of $t$, and $\mathbb{P}(z_t = \zeta | x_t = \xi)$ denote the probability of observing $\zeta$ given state $\xi$. Interpreting these probabilities as parameters of the HMM gives way to a natural parametric Bayesian approach to estimating these probabilities that involves augmenting and then marginalizing the joint distributions of $x$ and $z$, solving for forward and backward recursions, and then computing the maximum likelihood estimates via the Baum Welch algorithm. The transition and emission probabilities can finally be used to compute most-likely trajectories using the Viterbi algorithm.
 
 \subsection{Hidden Semi-Markov Model (HSMM)}
-A HSMM extends a HMM to settings where the sequence of states are not strictly Markovian - instead, the probability of transitioning to a new state $z_{s+1}$ depends on the elapsed time in the current state $z_s$. Here, we introduce $s = 1, \dots, S$ to index state transitions that remain Markovian, and use $t= 1, \dots, T$ to index the associated emissions that are not necessarily Markovian. Then, let $D_s \in [1, \dots, T]$ denote the duration that an agent remains in state $x_s$ with explicit mass function $\mathbb{P}(D_s = d_s | z_s = i)$. Figure 1 illustrates such an explicit-duration HSMM.
+A HSMM extends a HMM to settings where the sequence of states are not strictly Markovian - instead, the probability of transitioning to a new state $z_{s+1}$ depends on the elapsed time in the current state $z_s$. Here, we introduce $s = 1, \dots, S$ to index state transitions that remain Markovian, and use $t= 1, \dots, T$ to index the associated emissions that are not necessarily Markovian. Then, let $D_s \in [1, \dots, T]$ denote the duration that an agent remains in state $x_s$ with explicit mass function $\mathbb{P}(D_s = d_s | z_s = i)$. Figure ~\ref{fig:hsmm} illustrates such an explicit-duration HSMM, where we define $z_s$ as super-states of sub-states $z'_{t}$ which each emit one observation $x_{t}$. It follows that the super-states are Markovian but sub-states are not.
 
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.15]{images/hsmm.png}
-\caption{HSMM where state transitions are Markovian, while emissions associated with each state follow some explicit duration distribution.}
+\includegraphics[scale=0.15]{images/hsmm2.png}
+\caption{HSMM where super state transitions are Markovian, while emissions associated with each state follow some explicit duration distribution.}
+\label{fig:hsmm}
 \end{figure}
 
-% \paragraph{New preprint option for 2018}
+\subsection{Hierarchical Dirichlet Process HSMM (HDP-HSMM)}
+We begin this section by reviewing the formulation of a hierarchical Dirichlet process HMM (HDP-HMM), which is a Bayesian non-parametric treatment of the classical HMM. A HDP-HMM$(\gamma, \alpha, H)$ model is a process governed by:
+\begin{itemize}
+  \item $\beta_k \coloneqq \beta_k'\cdot \prod_{i=1}^{k-1} (1-\beta_i')$ where $\beta_i' \overset{\text{i.i.d}}{\sim} Beta(1,\gamma)$
+  \item $\pi_k \overset{\text{i.i.d}}{\sim} DP(H(\beta), \alpha)$ for $k = 1, \dots, \infty$ where $\beta = \{\beta_k\}_{k=1}^{\infty}$
+  \item $z_t \sim \pi_{z_{t-1}}$
+  \item $x_t \sim h(\theta_{z_t})$ where $\theta_{k} \sim H$ for $k = 1, \dots, \infty$
+\end{itemize}
+where $\gamma, \alpha > 0$ can be interpreted as concentration parameters and $H$ is the base distribution of the Dirichlet process. Note that $\{\beta_k\}_{k=1}^{\infty}$ is generated from a stick-breaking process with concentration parameter $\gamma$. These are then used in the generation of  transition distributions $\{\pi_k \}_{k=1}^{\infty}$ from a Dirichlet process with parameters $H$ and $\alpha$, where $H$ is defined on the $\{\beta_k\}_{k=1}^{\infty}$ partitions of the measurement set. For $t = 1, \dots, T$, each state $z_t$ is drawn from a respective $\pi_{z_{t-1}}$, and each observation is drawn from an observation distribution $h(\theta_{z_t})$ where $\theta_{k}$ is drawn from $H$. Observe that as $\alpha$ decreases, distributions $\{\pi_k\}_{s=1}^{\infty}$ tend to be more concentrated, and as $\gamma$ decreases, $\{\beta_k\}_{k=1}^{\infty}$ tends to zero and $\{h(\theta_{z_t})\}_{t=1}^{T}$ tends to be more concentrated as a result.
 
+HDP-HSMM is an augmentation of the HDP-HMM to include duration distributions. Continuing from the notation above yields:
+\begin{itemize}
+  \item $\beta_k \coloneqq \beta_k'\cdot \prod_{i=1}^{k-1} (1-\beta_i')$ where $\beta_i' \overset{\text{i.i.d}}{\sim} Beta(1,\gamma)$
+  \item $\pi_k \overset{\text{i.i.d}}{\sim} DP(H(\beta), \alpha)$ for $k = 1, \dots, \infty$ where $\beta = \{\beta_k\}_{k=1}^{\infty}$
+  \item $z_s \sim \tilde{\pi}_{z_{s-1}}$
+  \item $D_s \sim g(\omega_{z_s})$ where $\omega_k \sim G$ for $k = 1, \dots, \infty$
+  \item $z'_{t_{s}:t'_{s}} = z_s$ where $t_{s} = \sum_{s' < s} D_s + 1$ and $t'_{s} = t_{s} + D_s - 1$
+  \item $x_{t_{s}: t'_{s}} \overset{\text{i.i.d}}{\sim} h(\theta_{z'_t})$ where $\theta_{k} \sim H$ for $k = 1, \dots, \infty$
+\end{itemize}
+
+The main differences here are that we introduce a base distribution $G$ for drawing durations $D_s$ in a similar way that $H$ is defined in the HSMM setting which we use for drawing $\pi$. The duration distribution sequence of sub-states $z'_{t_{s}:t'_{s}}$ is set to the corresponding super-state $z_{s}$ where $t_{s}$ is the starting index for the sub-state sequence corresponding to super-state $z_s$, and $t'_{s}$ is the end index for the sub-state sequence corresponding to super-state $z_s$. The observation sequence is then drawn from the sub-state sequence using $H$. Note that $z_s$ is drawn from $\tilde{pi}_{k} \coloneqq \frac{\pi_{k,j}}{1-\pi_{k,k}}(1 - \delta_{k,j})$, which normalizes $\pi_k$ to prevent self-transitions in the super-state sequence $z_s$. Figure ~\ref{fig:hdphsmm} extends the previous HSMM diagram to illustrate the connections between the HDP component of the model, and the HSMM.
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.12]{images/hdphsmm.png}
+\caption{HDP-HSMM incorporates a HDP component into a HSMM}
+\label{fig:hdphsmm}
+\end{figure}
 
 \section{Simulating Robot States and Observations}
 
-To generate the simulated robot pathways and observations, we varied the following settings and assumptions of the map and robot motion model:
+To generate the simulated agent pathways and observations, we varied the following map settings and motion model assumptions:
 
 \begin{enumerate}
-	\item \textbf{Map size}: We generated pathways using 5$\times$5-size grids, so each grid had a total of 25 hidden states.
-	\item \textbf{Obstacles}: For both map sizes, we placed obstacles in the map by making certain states in the grid impossible to visit -- this represents the robot encountering real-life obstacles, like walls or other objects. We varied the number and placement of obstacles in each map. We believe that increasing the number of obstacles will increase the accuracy of the estimation methods, as there are fewer possible paths for the robot to take.
+	\item \textbf{Map size}: We generated pathways on 5$\times$5 grids, so each grid has 25 hidden states.
+	\item \textbf{Obstacles}: For each map, we placed obstacles in the map by making certain states in the grid impossible to visit -- this represents the robot encountering real-life obstacles, like walls or other objects. We varied the number and placement of obstacles in each map. We believe that increasing the number of obstacles will increase the accuracy of the estimation methods, as there are fewer possible paths for the robot to take.
 	\item \textbf{Markov property}: We simulated three different settings for the transition matrix between states, two of which did not violate the Markov assumption and one that did. Further details of these settings are Section 2.2 below.
 \end{enumerate}
 

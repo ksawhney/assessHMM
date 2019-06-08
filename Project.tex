@@ -26,6 +26,14 @@
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
 
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{mathtools}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+\usepackage{graphicx}
+\graphicspath{{./images/}}
+\usepackage{float}
+
 \title{Empirical Assessment of HMM and HSMM Accuracy}
 
 % The \author macro works with any number of authors. There are two commands
@@ -68,16 +76,30 @@
 \maketitle
 
 \begin{abstract}
-	We empirically compare the accuracy of the Baum-Welch and Viterbi algorithms and the Hidden Semi-Markov Model algorithm to estimate hidden state sequences from time-ordered observations. To do so, we simulate data on robot pathways in a variety of different GridWorld settings, including altering the size of the grid, the placement of the obstacles, and the behavior of the agent as it moves through the grid (including settings which violate the Markov assumption). We found that (to be filled in)
+We empirically compare the accuracy of the Baum-Welch and Viterbi algorithms with a Hidden Semi-Markov Model (HSMM) algorithm to estimate hidden state sequences from time-ordered observations. Specifically, we simulate agent pathways in a variety of GridWorld settings that differ in grid size, placement of obstacles, and transition mechanism, including settings which violate the Markov assumption implicit to a Hidden Markov Model (HMM). We found that (to be filled in)
 \end{abstract}
 
 \section{Background and Introduction}
 
-Algorithms to estimate the most likely sequence of hidden states from observations in a hidden Markov model rely on the Markov assumption, that future states are conditionally independent of past states given the present state. The most popular method for estimating these states, evaluating conditional likelihood using the forward-backward algorithm then inferring the most likely sequence of hidden states using the Viterbi algorithm, relies on this assumption. However, some researchers have suggested that the Markov assumption need not be strictly met for these techniques to generate reasonably accurate estimates of hidden state sequences. We sought to empirically test this proposition on the problem of estimating a robot's path in a GridWorld setting. To do so, we randomly generated a sequence of robot movements and observations under a variety of assumptions, including settings where we enforced the Markov assumption and others where we relaxed it.
+Algorithms to estimate the most likely sequence of hidden states from observations in a hidden Markov model rely on the Markov assumption, that future states are conditionally independent of past states given the present state. The most popular method for estimating these states involves evaluating conditional likelihood using the forward-backward algorithm and then inferring the most likely sequence of hidden states using the Viterbi algorithm, which relies on this assumption. However, some researchers have suggested that the Markov assumption need not be strictly met for these techniques to generate reasonably accurate estimates of hidden state sequences. We sought to empirically test this proposition on the problem of estimating an agent's path in a GridWorld setting. To do so, we randomly generated a sequence of robot movements and observations under a variety of assumptions, including settings where we enforced the Markov assumption and others where we relaxed it.
 
-\subsection{Hidden Semi-Markov Model}
+\subsection{Hidden Markov Model (HMM)}
+A HMM is a model consisting of two sequences:
+\begin{itemize}
+  \item A state sequence $z = \{z_1, z_2, \dots, z_T\}$ where $z_t$ is the state at timestep $t$ which takes a value from a state space $\mathcal{Z}$ that is assumed to be static and finite for $t = 1, 2, \dots, T$
+  \item An observation (or emission) sequence $x = \{x_1, x_2, \dots, x_T\}$ where $x_t$ is the observation at timestep $t$ from an observation space $\mathcal{X}$ that is assumed to be static and finite for $t = 1, 2, \dots, T$
+\end{itemize}
 
+The relationship between these two sequences are embedded in the transition probabilities and the emission probabilities of the HMM. In particular, let $\pi_{i,j} = \mathbb{P}(z_{t+1} = j | z_{t} = i)$ denote the probability of an agent transitioning from state $i$ to state $j$, which we assume to be independent of $t$, and $\mathbb{P}(z_t = \zeta | x_t = \xi)$ denote the probability of observing $\zeta$ given state $\xi$. Interpreting these probabilities as parameters of the HMM gives way to a natural parametric Bayesian approach to estimating these probabilities that involves augmenting and then marginalizing the joint distributions of $x$ and $z$, solving for forward and backward recursions, and then computing the maximum likelihood estimates via the Baum Welch algorithm. The transition and emission probabilities can finally be used to compute most-likely trajectories using the Viterbi algorithm.
 
+\subsection{Hidden Semi-Markov Model (HSMM)}
+A HSMM extends a HMM to settings where the sequence of states are not strictly Markovian - instead, the probability of transitioning to a new state $z_{s+1}$ depends on the elapsed time in the current state $z_s$. Here, we introduce $s = 1, \dots, S$ to index state transitions that remain Markovian, and use $t= 1, \dots, T$ to index the associated emissions that are not necessarily Markovian. Then, let $D_s \in [1, \dots, T]$ denote the duration that an agent remains in state $x_s$ with explicit mass function $\mathbb{P}(D_s = d_s | z_s = i)$. Figure 1 illustrates such an explicit-duration HSMM.
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.15]{images/hsmm.png}
+\caption{HSMM where state transitions are Markovian, while emissions associated with each state follow some explicit duration distribution.}
+\end{figure}
 
 
 

@@ -6,7 +6,7 @@ import scipy.stats as stats
 
 class HMM_Simulator(object):
 
-    def __init__(self, seed, sigma, map_size, obs_size, obstacles=None):
+    def __init__(self, seed, sigma, map_size, obs_size, p_stay, obstacles=None):
 
         ## Set seed for randonmness
         np.random.seed(seed)
@@ -16,7 +16,7 @@ class HMM_Simulator(object):
 
         #### Defining parameters and variables ####
         ## Probability of robot staying in the same state
-        self.p_stay = 0.2
+        self.p_stay = p_stay
         # Probability of robot observing given state correctly
         self.p_truesignal = 0.7
         # Size of the gridworld
@@ -418,23 +418,23 @@ class HMM_Simulator(object):
 if __name__ == '__main__':
     # Build State cases - Map Description
     # Profile 1 - Size: 5x5, Obs_size: 4, no obstacle
-    h = HMM_Simulator(seed = 123, sigma = 0.5, map_size = 5, obs_size = 8)
-    h.perturb_transition(-0.1, 0.1)
+    h = HMM_Simulator(seed = 123, sigma = 0.5, map_size = 5, obs_size = 8, p_stay = 0.2)
+    h.perturb_transition(a = -0.1, b = 0.1)
     h.draw_world("5x5;4;free")
     h.generate_txt(seq_n = 10, steps = 200, name = "5x5;4;free")
     
     # Build State cases - Map Description
     # Profile 2 - Size: 5x5, Obs_size: 4, 6 obstacles
     # Obstacles create some sort of loop
-    h = HMM_Simulator(seed = 123, sigma = 0.5, map_size = 5, obs_size = 8, obstacles=[4, 6, 7, 12, 19, 20])
-    h.perturb_transition(-0.1, 0.1)
+    h = HMM_Simulator(seed = 123, sigma = 0.5, map_size = 5, obs_size = 8, p_stay = 0.2, obstacles=[4, 6, 7, 12, 19, 20])
+    h.perturb_transition(a = -0.1, b = 0.1)
     h.draw_world("5x5;4;6box")
     h.generate_txt(seq_n = 10, steps = 200, name = "5x5;4;6box")
 
     # Build State cases - Map Description
     # Profile 3 - Size: 5x5, Obs_size: 4, 6 obstacles
     # Separated World
-    h = HMM_Simulator(seed = 123, sigma = 0.5, map_size = 5, obs_size = 8, obstacles=[9,10,11,12,14,16])
-    h.perturb_transition(-0.1, 0.1)
+    h = HMM_Simulator(seed = 123, sigma = 0.5, map_size = 5, obs_size = 8, p_stay = 0.2, obstacles=[9,10,11,12,14,16])
+    h.perturb_transition(a = -0.1, b = 0.1)
     h.draw_world("5x5;4;6sep")
     h.generate_txt(seq_n = 10, steps = 200, name = "5x5;4;6sep")

@@ -46,6 +46,7 @@
         \begin{itemize}
             \item We sought to \textbf{empirically test this proposition} on the problem of estimating an agent's path in a GridWorld setting
             \item Specifically, we \textbf{simulate agent pathways} under a variety of settings that differ in grid size, placement of obstacles, and transition mechanism, including settings which violate the Markov assumption implicit to traditional HMMs
+            \item Hierarchical Dirichlet Process Hidden Semi-Markov Models (\textbf{HDP-HSMMs}) are a Bayesian non-parametric approach to estimating hidden state sequences, where transition, emission and initial state distribution priors are not defined by the user. It is expected that these models will outperform HMMs in non-Markovian settings by better capturing these effects
         \end{itemize}
     \end{frame}
 
@@ -141,8 +142,6 @@
     \item \textbf{Sticky Transitions}: The HDP-HSMM specializes in inferring observations when the underlying motion is presumed to be "sticky". Specifically, a sticky process is one where transition probabilities correspond to an agent's elapsed duration in the same state. In our implementation, the probability of staying in the same state decreases geometrically with the duration, and resets upon entering a new state
     \end{itemize}
 \end{frame}
-
-
 
 \begin{frame}
     \frametitle{Results}

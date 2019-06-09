@@ -137,7 +137,7 @@ class HMM_Simulator(object):
         Z = np.zeros(N)
         X = np.random.choice(self.valid_states, N)
         for t in range(N):
-            Z[t] = np.random.choice(list(range(self.obs_size)), 1, p=self.M[X[t], :])
+            Z[t] = np.random.choice(list(range(self.S_type)), 1, p=self.M[X[t], :])
 
         return X, Z
 

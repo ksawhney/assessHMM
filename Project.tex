@@ -35,7 +35,7 @@
 \usepackage{float}
 \usepackage{array}
 
-\title{Empirical Assessment of HMM and HSMM Accuracy}
+\title{Empirical Assessment of HMM and HDP-HSMM Methods}
 
 % The \author macro works with any number of authors. There are two commands
 % used to separate the names and addresses of multiple authors: \And and \AND.
@@ -82,7 +82,7 @@ We empirically compare the accuracy of the Baum-Welch and Viterbi algorithms wit
 
 \section{Background and Introduction}
 
-Algorithms to estimate the most likely sequence of hidden states from observations in a HMM rely on the Markov assumption -- that future states are conditionally independent of past states given the present state. The most popular method for estimating these states involves evaluating conditional likelihoods using the forward-backward algorithm and then inferring the most likely sequence of hidden states using the Viterbi algorithm, which relies on this assumption. However, some researchers have suggested that the Markov assumption need not be strictly met for these techniques to generate reasonably accurate estimates of hidden state sequences. We sought to empirically test this proposition on the problem of estimating an agent's path in a GridWorld setting. To do so, we generate sequences of agent pathways and their corresponding observations under a variety of assumptions, including settings where we enforce the Markov assumption and others where we relax it.
+Algorithms to estimate the most likely sequence of hidden states from observations in a HMM rely on the Markov assumption -- that future states are conditionally independent of past states given the present state. The most popular method for estimating these states involves evaluating conditional likelihoods using the forward-backward algorithm and then inferring the most likely sequence of hidden states using the Viterbi algorithm, which relies on this assumption. However, it has been suggested that the Markov assumption need not be strictly met for these techniques to generate reasonably accurate estimates of hidden state sequences. We sought to empirically test this proposition on the problem of estimating an agent's path in a GridWorld setting. To do so, we generate sequences of agent pathways and their corresponding observations under a variety of assumptions, including settings where we enforce the Markov assumption and others where we relax it.
 
 \subsection{Hidden Markov Model (HMM)}
 A HMM is a model consisting of two sequences:
@@ -169,87 +169,68 @@ As stated above, the path for each grid was simulated using three different sett
 	\item \textbf{Sticky Transitions}: The HDP-HSMM specializes in inferring observations when the underlying motion is presumed to be "sticky". Specifically, a sticky process is one where transition probabilities correspond to an agent's elapsed duration in the same state. In our implementation, the probability of staying in the same state decreases geometrically with the duration, and resets upon entering a new state.
  \end{enumerate}
 
+To generate the "true" transition matrix from which the robot path would be simulated, we first generated a matrix where the probability of staying in the same state was 0.2. This probability was constant in the Traditional Markov setting, while it decreased geometrically in the Sticky Transitions setting. We then perturbed this probability using a randomly generated value between -0.1 and 0.1. To fill out the matrix, we evenly distributed the remaining probability among valid adjacent states.
+
 \subsection{Observation Settings}
 
-To compare the original HMM and HDP-HSMM, we simulate observations that are continuous measurements. Each state is distinguished by a distinct mean $\mu$, while the standard deviation $\sigma$ is initialized to be the same across all states. The mean value is similar to the discrete setting, where in each state, the robot observes a Gaussian sample given the mean of the state.
+To compare the original HMM and HDP-HSMM, we simulate observations that are continuous measurements. Each state is assigned a true mean $\mu$, while the standard deviation is identical and fixed at $\sigma = 0.5$ across all states. There were eight possible true values of $\mu$, so some states had the same observation mean. The mean value is similar to the discrete setting, where in each state, the robot observes a Gaussian sample given the mean of the state.
 
-To generate our data, for each of the 9 settings (3 grids x 3 transition settings), we simulated state sequences of length 200. Then, we simulated observations from these state sequences using the randomly generated emission matrices (the "true" observation for each state was also randomly assigned). These generated observation sequences were used as the inputs for our HMM and HDP-HSMM.
+To generate our data, for each of the 9 settings (3 grids x 3 transition settings), we simulated 10 state sequences of length 200. Then, we simulated observations from these state sequences using the emission distributions (the "true" observation for each state was also randomly assigned). These generated observation sequences were used as the inputs for our HMM and HDP-HSMM.
 
-\section{Headings: first level}
-\label{headings}
+\section{Results}
 
-All headings should be lower case (except for first word and proper nouns),
-flush left, and bold.
+To measure the accuracy of the HMM and HDP-HSMM methods, we measured the misclassification rate between the state sequences estimated by each method from the observation sequences and the true state sequences from which the observations were generated. Our results below are the median misclassification rate across our 10 generated sequences using each method.
 
-First-level headings should be in 12-point type.
+\begin{table}[H]
+	\centering
+	\begin{tabular}{|l|l|l|l|}
+	\hline
+	& Map 1 & Map 2 & Map 3 \\
+	\hline
+	Random	& 0.908 & 0.908 & 0.908  \\
+	\hline
+	Markov & 0.483 & 0.435 & 0.440 \\
+	\hline
+	Sticky & 0.460 & 0.475& 0.503 \\
+	\hline
+	\end{tabular}
+	\caption{HMM Results}
+\end{table}
 
-\subsection{Headings: second level}
+\begin{table}[H]
+	\centering
+	\begin{tabular}{|l|l|l|l|}
+		\hline
+		& Map 1 & Map 2 & Map 3 \\
+		\hline
+		Random	& 0.908 &  &   \\
+		\hline
+		Markov & 0.768 & 0.758 &  \\
+		\hline
+		Sticky & 0.790 & 0.788 &  \\
+		\hline
+	\end{tabular}
+	\caption{HDP-HSMM Results}
+\end{table}
 
-Second-level headings should be in 10-point type.
+\section{Discussion}
 
-\subsubsection{Headings: third level}
+\subsection{Markov Property and Obstacles in HMM}
 
-Third-level headings should be in 10-point type.
+The results of applying the Baum-Welch and Viterbi algorithm to our simulated sequences largely confirm that relaxing the Markov assumptions does not lead to significantly worse results. In the two maps with obstacles, the misclassification rate in the sticky transition setting was 4-6 percentage points worse than the Markovian setting, and in the map without obstacles the sticky setting actually got a lower misclassification rate. This small reduction in accuracy is acceptable, as it allows the application of the method to many more data sets -- the Markov assumption is frequently violated by real data.\\
+\\
+Random generation \\
+\\
+Effect of obstacles \\
+\\
+results when varying number of possible means
 
-\paragraph{Paragraphs}
 
-There is also a \verb+\paragraph+ command available, which sets the heading in
-bold, flush left, and inline with the text, with the heading followed by 1\,em
-of space.
 
-\section{Citations, figures, tables, references}
-\label{others}
+\subsection{Comparing HMM and HSMM}
 
-These instructions apply to everyone.
 
-\subsection{Citations within the text}
 
-The \verb+natbib+ package will be loaded for you by default.  Citations may be
-author/year or numeric, as long as you maintain internal consistency.  As to the
-format of the references themselves, any style is acceptable as long as it is
-used consistently.
-
-The documentation for \verb+natbib+ may be found at
-\begin{center}
-  \url{http://mirrors.ctan.org/macros/latex/contrib/natbib/natnotes.pdf}
-\end{center}
-Of note is the command \verb+\citet+, which produces citations appropriate for
-use in inline text.  For example,
-\begin{verbatim}
-   \citet{hasselmo} investigated\dots
-\end{verbatim}
-produces
-\begin{quote}
-  Hasselmo, et al.\ (1995) investigated\dots
-\end{quote}
-
-If you wish to load the \verb+natbib+ package with options, you may add the
-following before loading the \verb+neurips_2018+ package:
-\begin{verbatim}
-   \PassOptionsToPackage{options}{natbib}
-\end{verbatim}
-
-If \verb+natbib+ clashes with another package you load, you can add the optional
-argument \verb+nonatbib+ when loading the style file:
-\begin{verbatim}
-   \usepackage[nonatbib]{neurips_2018}
-\end{verbatim}
-
-As submission is double blind, refer to your own published work in the third
-person. That is, use ``In the previous work of Jones et al.\ [4],'' not ``In our
-previous work [4].'' If you cite your other papers that are not widely available
-(e.g., a journal paper under review), use anonymous author names in the
-citation, e.g., an author of the form ``A.\ Anonymous.''
-
-\subsection{Footnotes}
-
-Footnotes should be used sparingly.  If you do require a footnote, indicate
-footnotes with a number\footnote{Sample of the first footnote.} in the
-text. Place the footnotes at the bottom of the page on which they appear.
-Precede the footnote with a horizontal rule of 2~inches (12~picas).
-
-Note that footnotes are properly typeset \emph{after} punctuation
-marks.\footnote{As in this example.}
 
 \subsection{Figures}
 

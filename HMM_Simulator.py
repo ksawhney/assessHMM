@@ -216,7 +216,7 @@ class HMM_Simulator(object):
 
     # Generate the sequence where the markov property is violated due to the stickiness property
     # The observation is gaussian with the true state as the mean
-    # The probability of staying in the same state decreases linearly
+    # The probability of staying in the same state decreases geometrically
     def corr_generate_conti(self, N):
         # Same process as the normal generate
         Z = np.zeros(N)
@@ -230,21 +230,19 @@ class HMM_Simulator(object):
         for t in range(N):
             #Select the next state based on the stickness count
             if stick_count != 0:
-                T_corr = np.copy(self.T)
-                T_corr[current_state, current_state] -= stick_count * 0.05
-                if T_corr[current_state, current_state] <= 0:
-                    T_corr[current_state, current_state] = 0
+                T_corr[current_state, current_state] = T_corr[current_state, current_state] ** stick_count
                 T_corr = HMM_Simulator.T_normalize(T_corr)
                 next_state = np.random.choice(list(range(self.state_size)), 1, 
                                               p=T_corr[current_state, :])[0]
             else:
-                next_state = next_state = np.random.choice(list(range(self.state_size)), 1, 
+                next_state = np.random.choice(list(range(self.state_size)), 1, 
                                               p=self.T[current_state, :])[0]
 
             if next_state == current_state:
                 stick_count += 1
             else:
                 stick_count = 0
+                T_corr = np.copy(self.T)
 
             X[t] = next_state
             Z[t] = np.random.normal(loc = self.S_type[next_state], scale = self.sigma, size =1)

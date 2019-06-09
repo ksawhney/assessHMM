@@ -219,11 +219,9 @@ To measure the accuracy of the HMM and HDP-HSMM methods, we measured the misclas
 
 The results of applying the Baum-Welch and Viterbi algorithm to our simulated sequences largely confirm that relaxing the Markov assumptions does not lead to significantly worse results. In the two maps with obstacles, the misclassification rate in the sticky transition setting was 4-6 percentage points worse than the Markovian setting, and in the map without obstacles the sticky setting actually got a lower misclassification rate. This small reduction in accuracy is acceptable, as it allows the application of the method to many more data sets -- the Markov assumption is frequently violated by real data.\\
 \\
-Random generation \\
+An interesting result was the effect of the number and placement of obstacles on the map. In the Markovian setting, the misclassification rate for the two maps with obstacles, Maps 2 and 3, were lower than the rate for Map 1, with no obstacles. The most likely explanation is that, by reducing the total number of valid states and the number of possible pathways, obstacles actually make it easier to estimate the hidden state sequence of the agent. This pattern was reversed in the sticky transition setting, though we do not have a strong intuitive explanation for why this is the case. \\
 \\
-Effect of obstacles \\
-\\
-results when varying number of possible means
+We also discovered observation generation settings under which the method performed very poorly. If we set the number of possible true $\mu$ values to be small -- so many states shared the same mean -- the misclassification rate was sharply higher. The more possibilities there were, the better the algorithm performed. This made sense to us, as the method would have a hard time determining which state a certain observation came from if many states had a similarly high likelihood under the emission distribution.
 
 
 
@@ -231,59 +229,6 @@ results when varying number of possible means
 
 
 
-
-\subsection{Figures}
-
-\begin{figure}
-  \centering
-  \fbox{\rule[-.5cm]{0cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
-  \caption{Sample figure caption.}
-\end{figure}
-
-All artwork must be neat, clean, and legible. Lines should be dark enough for
-purposes of reproduction. The figure number and caption always appear after the
-figure. Place one line space before the figure caption and one line space after
-the figure. The figure caption should be lower case (except for first word and
-proper nouns); figures are numbered consecutively.
-
-You may use color figures.  However, it is best for the figure captions and the
-paper body to be legible if the paper is printed in either black/white or in
-color.
-
-\subsection{Tables}
-
-All tables must be centered, neat, clean and legible.  The table number and
-title always appear before the table.  See Table~\ref{sample-table}.
-
-Place one line space before the table title, one line space after the
-table title, and one line space after the table. The table title must
-be lower case (except for first word and proper nouns); tables are
-numbered consecutively.
-
-Note that publication-quality tables \emph{do not contain vertical rules.} We
-strongly suggest the use of the \verb+booktabs+ package, which allows for
-typesetting high-quality, professional tables:
-\begin{center}
-  \url{https://www.ctan.org/pkg/booktabs}
-\end{center}
-This package was used to typeset Table~\ref{sample-table}.
-
-\begin{table}
-  \caption{Sample table title}
-  \label{sample-table}
-  \centering
-  \begin{tabular}{lll}
-    \toprule
-    \multicolumn{2}{c}{Part}                   \\
-    \cmidrule(r){1-2}
-    Name     & Description     & Size ($\mu$m) \\
-    \midrule
-    Dendrite & Input terminal  & $\sim$100     \\
-    Axon     & Output terminal & $\sim$10      \\
-    Soma     & Cell body       & up to $10^6$  \\
-    \bottomrule
-  \end{tabular}
-\end{table}
 
 \section{Final instructions}
 

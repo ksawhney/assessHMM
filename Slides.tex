@@ -11,10 +11,10 @@
 \DeclareMathOperator*{\argmax}{argmax}
 
 \title[]{Empirical Assessment of HMM and HDP-HSMM Methods}
-\subtitle{TTIC 31150 - Robotics}
+\subtitle{TTIC 31170 - Robotics}
 \author[Lam, Sawhney, Yoo]{A. Lam \and K. Sawhney \and J. Yoo}
 
-\date[June 2019]{June 2019}
+\date[June 11, 2019]{June 11, 2019}
 
 \begin{document}
 
@@ -36,7 +36,7 @@
 \frametitle{Introduction - Problem Statement}
     \begin{itemize}
         \item Algorithms to estimate the most likely sequence of hidden states from observations in a \textbf{HMM rely on the Markov assumption} -- that future states are conditionally independent of past states given the present state
-        \item The most popular method for estimating these states involves evaluating conditional likelihoods using the forward-backward algorithm and then inferring the most likely sequence of hidden states using the Viterbi algorithm
+        \item The most popular method for estimating these states involves evaluating conditional likelihoods using the forward-backward algorithm, then inferring the most likely sequence of hidden states using the Viterbi algorithm
         \item However, it has been suggested that \textbf{the Markov assumption need not be strictly met} for these techniques to generate reasonably accurate estimates of hidden state sequences
     \end{itemize}
 \end{frame}
@@ -144,10 +144,69 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{Results}
-    \begin{itemize}
-        \item Results
-    \end{itemize}
+	\frametitle{HMM Prior Settings}
+	\begin{itemize}
+		\item \textbf{Initial state}: Uniform over all valid states
+		\item \textbf{Transition matrix}: $p = 0.2$ of staying in the same state, remaining probability $p = 0.8$ distributed evenly across valid adjacent states.
+		\item \textbf{Emission distribution}: $\mathcal{N}(\mu, \sigma^2)$ based on known true values of $\mu$ and $\sigma$.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Empirical Results}
+    \begin{table}[H]
+    	\centering
+    	\begin{tabular}{|l|l|l|l|}
+    		\hline
+    		& Map 1 & Map 2 & Map 3 \\
+    		\hline
+    		Random	& 0.908 & 0.908 & 0.908  \\
+    		\hline
+    		Markov & 0.483 & 0.435 & 0.440 \\
+    		\hline
+    		Sticky & 0.460 & 0.475& 0.503 \\
+    		\hline
+    	\end{tabular}
+    	\caption{HMM Results}
+    \end{table}
+    
+    \begin{table}[H]
+    	\centering
+    	\begin{tabular}{|l|l|l|l|}
+    		\hline
+    		& Map 1 & Map 2 & Map 3 \\
+    		\hline
+    		Random	& 0.908 & N/A  & N/A   \\
+    		\hline
+    		Markov & 0.768 & 0.758 & 0.765 \\
+    		\hline
+    		Sticky & 0.790 & 0.788 & 0.785  \\
+    		\hline
+    	\end{tabular}
+    	\caption{HDP-HSMM Results}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Discussion: Markov Property in HMM}
+	\begin{itemize}
+		\item Relaxing the Markov assumptions did not lead to significantly worse results. The reduction in accuracy is small enough to allow application of the method to data where the Markov assumption is not met.
+		\item Having obstacles on the map lowered the misclassification rate in the Markov setting -- obstacles meant having fewer overall hidden states and a smaller number of potential paths, which makes the hidden states easier to estimate.
+		\item The number of possible true values of $\mu$ had a large effect on the misclassification rate -- the more possibilities there were, the better the algorithm performed.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Discussion: Comparing HMM and HDP-HSMM}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Conclusion \& Further Work}
+\end{frame}
+
+\begin{frame}
+	\centering
+	\huge{Questions?}
 \end{frame}
 
 

@@ -24,7 +24,7 @@
 \frametitle{Outline}
     \begin{enumerate}[I]
         \item Introduction
-        \item HMM \& HSMM
+        \item HMM, HSMM \& HDP-HSMM
         \item Data Generation
         \item Empirical Test
         \item Conclusion
@@ -37,13 +37,13 @@
     \begin{itemize}
         \item Markov Model covered in class
         \begin{itemize}
-            \item Abide by the markov assumption that state $X_{t+1}$ is conditioned on state $X_t$
-            \item Discrete data (Integers) that represents colors or specific categories
+            \item Abide by the Markov assumption that state $X_{t+1}$ is conditioned on state $X_t$
+            \item Discrete data (integer) that represents colors or specific categories
         \end{itemize}
         \item Extension to the Markov Model
         \begin{itemize}
             \item Continuous data which observations are random variables (temperature, humidity, etc)
-            \item Stickiness : Violation of markov assumption - probability of staying in the same state increases/decreases with each stay in the current state
+            \item Stickiness: Violation of Markov assumption - probability of staying in the same state increases/decreases with each stay in the current state
         \end{itemize}
     \end{itemize}
 \end{frame}
@@ -53,7 +53,7 @@
         \begin{itemize}
             \item Research Question
             \begin{itemize}
-                \item What is the best approach to do inference when data is continuous and markov assumption is violated? (HMM and HSMM)
+                \item What is the best approach to do inference when data is continuous and Markov assumption is violated? (HMM and HSMM)
                 \item Does the setting of the maps have impact on the performance of these algorithms?
             \end{itemize}
         \end{itemize}
@@ -61,35 +61,74 @@
 
 \begin{frame}
     \frametitle{HMM \& HSMM}
+        A HMM consists of two sequences:
         \begin{itemize}
-            \item HMM
+          \item A \textbf{state sequence} $z = \{z_1, z_2, \dots, z_T\}$ where $z_t$ is the state at timestep $t$ which takes a value from a state space $\mathcal{Z}$ that is assumed to be static and finite for $t = 1, 2, \dots, T$.
+          \item An \textbf{observation (or emission) sequence} $x = \{x_1, x_2, \dots, x_T\}$ where $x_t$ is the observation at timestep $t$ from an observation space $\mathcal{X}$ that is assumed to be static and finite for $t = 1, 2, \dots, T$.
         \end{itemize}
+
+        A HSMM extends a HMM to settings where the sequence of states are \textbf{not strictly Markovian} - instead, the probability of transitioning to a new state $z_{s+1}$ depends on the elapsed time in the current state $z_s$. In particular, let $D_s \in [1, \dots, T]$ denote the \textbf{duration} that an agent remains in state $x_s$ with explicit mass function $\mathbb{P}(D_s = d_s | z_s = i)$.
 \end{frame}
 
 \begin{frame}
-    \frametitle{HMM \& HSMM}
-        \begin{itemize}
-            \item HSMM
-        \end{itemize}
+    \frametitle{Illustration of the HSMM}
+    \begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.15]{images/hsmm2.png}
+    \caption{HSMM where super state transitions are Markovian, while emissions associated with each state follow some explicit duration distribution.}
+    \label{fig:hsmm}
+    \end{figure}
 \end{frame}
 
 \begin{frame}
-    \frametitle{Data Generation}
-        \begin{itemize}
-            \item Gridworld setting
-            \begin{itemize}
-                \item Size : 5x5
-                \item States : The observation at each states are Gaussian as $\mu$ as the true identity, $\sigma$ is universal across all states
-                \item Obstacles : Different formation of obstacles indicate states that cannot be visited by the robot
-            \end{itemize}
-        \end{itemize}
-\end{frame}
-
-\begin{frame}
-    \frametitle{Data Generation}
+    \frametitle{HDP-HMM}
+    A HDP-HMM$(\gamma, \alpha, H)$ model is governed by:
     \begin{itemize}
-        \item Examples of map generation
+      \item $\beta_k \coloneqq \beta_k'\cdot \prod_{i=1}^{k-1} (1-\beta_i')$ where $\beta_i' \overset{\text{i.i.d}}{\sim} Beta(1,\gamma)$
+      \item $\pi_k \overset{\text{i.i.d}}{\sim} DP(H(\beta), \alpha)$ for $k = 1, \dots, \infty$ where $\beta = \{\beta_k\}_{k=1}^{\infty}$
+      \item $z_t \sim \pi_{z_{t-1}}$
+      \item $x_t \sim h(\theta_{z_t})$ where $\theta_{k} \sim H$ for $k = 1, \dots, \infty$
     \end{itemize}
+    Interpretation:
+    \begin{itemize}
+        \item $\gamma, \alpha > 0$: concentration parameters, $H$: base distribution of Dirichlet process (DP)
+        \item $\{\beta_k\}_{k=1}^{\infty}$: stick-breaking process with parameter $\gamma$
+        \item $\{\pi_k \}_{k=1}^{\infty}$: transition distributions drawn from DP, $h(\theta_{z_t})$: observation distributions drawn from $H$
+        \item Each state $z_t$ is drawn from $\pi_{z_{t-1}}$, and each observation $x_t$ is drawn from $h(\theta_{z_t})$
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{HDP-HSMM}
+    HDP-HSMM is an augmentation of the HDP-HMM to \textbf{include duration distributions}. The main difference is that durations $D_s$ are drawn from base distribution $G$ and sub-states $z'_{t_{s}:t'_{s}}$ are then set to the corresponding super-state $z_{s}$ where $t_{s}:t'_{s}$ are sequence indices
+    \begin{itemize}
+      \item $\beta_k \coloneqq \beta_k'\cdot \prod_{i=1}^{k-1} (1-\beta_i')$ where $\beta_i' \overset{\text{i.i.d}}{\sim} Beta(1,\gamma)$
+      \item $\pi_k \overset{\text{i.i.d}}{\sim} DP(H(\beta), \alpha)$ for $k = 1, \dots, \infty$ where $\beta = \{\beta_k\}_{k=1}^{\infty}$
+      \item $z_s \sim \tilde{\pi}_{z_{s-1}}$
+      \item $D_s \sim g(\omega_{z_s})$ where $\omega_k \sim G$ for $k = 1, \dots, \infty$
+      \item $z'_{t_{s}:t'_{s}} = z_s$ where $t_{s} = \sum_{s' < s} D_s + 1$ and $t'_{s} = t_{s} + D_s - 1$
+      \item $x_{t_{s}: t'_{s}} \overset{\text{i.i.d}}{\sim} h(\theta_{z'_t})$ where $\theta_{k} \sim H$ for $k = 1, \dots, \infty$
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Illustration of HDP-HSMM}
+    \begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.12]{images/hdphsmm.png}
+    \caption{HDP-HSMM incorporates a HDP component into a HSMM}
+    \label{fig:hdphsmm}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Data Generation}
+        \begin{itemize}
+            \item Grid Size: 5x5
+            \item States: The observation at each state is Gaussian with mean $\mu$ as the true identity of the state, $\sigma$ is constant across all states
+            \item Obstacles: Different formation of obstacles indicate states that cannot be visited by the agent
+        \end{itemize}
+
         \newcommand{\addmapa}{\includegraphics[width=10em]{data/Model1/5x5;4;free.png}}
         \newcommand{\addmapb}{\includegraphics[width=10em]{data/Model2/5x5;4;6box.png}}
         \newcommand{\addmapc}{\includegraphics[width=10em]{data/Model3/5x5;4;6sep.png}}
@@ -98,7 +137,7 @@
         \sffamily
         \centering
         \begin{tabular}{l*3{C}@{}}
-        & \addmapa & \addmapb & \addmapc \\
+        \addmapa \addmapb \addmapc \\
         \end{tabular}
         \caption{GridWorld Maps}
         \end{table}

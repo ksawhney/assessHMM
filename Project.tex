@@ -77,12 +77,12 @@
 \maketitle
 
 \begin{abstract}
-We empirically compare the accuracy of the Baum-Welch and Viterbi algorithms with a Hidden Semi-Markov Model (HSMM) algorithm to estimate hidden state sequences from time-ordered observations. Specifically, we simulate agent pathways in a variety of GridWorld settings that differ in grid size, placement of obstacles, and transition mechanism, including settings which violate the Markov assumption implicit to a Hidden Markov Model (HMM). We found that (to be filled in)
+We empirically compare the accuracy of the Baum-Welch and Viterbi algorithms with the outputs of a Hierarchical Dirichlet Process Hidden Semi-Markov Model (HDP-HSMM) to estimate hidden state sequences from time-ordered observations. Specifically, we simulate agent pathways in a variety of GridWorld settings that vary in grid size, placement of obstacles, and transition mechanism, including settings which violate the Markov assumption implicit to traditional Hidden Markov Models (HMMs). We found that (to be filled in)
 \end{abstract}
 
 \section{Background and Introduction}
 
-Algorithms to estimate the most likely sequence of hidden states from observations in a hidden Markov model rely on the Markov assumption, that future states are conditionally independent of past states given the present state. The most popular method for estimating these states involves evaluating conditional likelihood using the forward-backward algorithm and then inferring the most likely sequence of hidden states using the Viterbi algorithm, which relies on this assumption. However, some researchers have suggested that the Markov assumption need not be strictly met for these techniques to generate reasonably accurate estimates of hidden state sequences. We sought to empirically test this proposition on the problem of estimating an agent's path in a GridWorld setting. To do so, we randomly generated a sequence of robot movements and observations under a variety of assumptions, including settings where we enforced the Markov assumption and others where we relaxed it.
+Algorithms to estimate the most likely sequence of hidden states from observations in a HMM rely on the Markov assumption -- that future states are conditionally independent of past states given the present state. The most popular method for estimating these states involves evaluating conditional likelihoods using the forward-backward algorithm and then inferring the most likely sequence of hidden states using the Viterbi algorithm, which relies on this assumption. However, some researchers have suggested that the Markov assumption need not be strictly met for these techniques to generate reasonably accurate estimates of hidden state sequences. We sought to empirically test this proposition on the problem of estimating an agent's path in a GridWorld setting. To do so, we generate sequences of agent pathways and their corresponding observations under a variety of assumptions, including settings where we enforce the Markov assumption and others where we relax it.
 
 \subsection{Hidden Markov Model (HMM)}
 A HMM is a model consisting of two sequences:
@@ -132,23 +132,23 @@ The main differences here are that we introduce a base distribution $G$ for draw
 \label{fig:hdphsmm}
 \end{figure}
 
-\section{Simulating Robot States and Observations}
+\section{Simulating Agent States and Observations}
 
-To generate the simulated agent pathways and observations, we varied the following map settings and motion model assumptions:
+To generate the agent pathways and observations, we varied the following grid settings and motion model assumptions:
 
 \begin{enumerate}
-	\item \textbf{Map size}: We generated pathways on 5$\times$5 grids, so each grid has 25 hidden states.
-	\item \textbf{Obstacles}: For each map, we placed obstacles in the map by making certain states in the grid impossible to visit -- this represents the robot encountering real-life obstacles, like walls or other objects. We varied the number and placement of obstacles in each map. We believe that increasing the number of obstacles will increase the accuracy of the estimation methods, as there are fewer possible paths for the robot to take.
-	\item \textbf{Markov property}: We simulated three different settings for the transition matrix between states, two of which did not violate the Markov assumption and one that did. Further details of these settings are Section 2.2 below.
+	\item \textbf{Grid Size}: We generated pathways on 5$\times$5 grids, so each grid has 25 hidden states.
+	\item \textbf{Obstacles}: Obstacles are placed in each grid by making certain states impossible to visit -- this is analogous to a robot encountering physical boundaries, like walls or other objects. The number and placement of obstacles in each grid is varied with the expectation that increasing the number of obstacles will improve the accuracy of the estimation methods, as there are fewer feasible paths for the agent.
+	\item \textbf{Markov Property}: We simulated three different settings for the transition matrix between states, two of which did not violate the Markov assumption and one that did. Further details of these settings can be found in Section 2.2 below.
 \end{enumerate}
 
 \subsection{GridWorld Setup}
 
-We simulated the robot pathways on the following three grids. Each square in the grid either has a number representing its true observation, or is colored black, indicating an obstacle.
+We simulated pathways on the following three grids. Each square in the grid either has a number representing its true observation, or is colored black, indicating an obstacle.
 
-\newcommand{\addmapa}{\includegraphics[width=10em]{data/Model1/mapping.png}}
-\newcommand{\addmapb}{\includegraphics[width=10em]{data/Model2/mapping.png}}
-\newcommand{\addmapc}{\includegraphics[width=10em]{data/Model3/mapping.png}}
+\newcommand{\addmapa}{\includegraphics[width=10em]{data/Model1/5x5;4;free.png}}
+\newcommand{\addmapb}{\includegraphics[width=10em]{data/Model2/5x5;4;6box.png}}
+\newcommand{\addmapc}{\includegraphics[width=10em]{data/Model3/5x5;4;6sep.png}}
 \newcolumntype{C}{>{\centering\arraybackslash}m{10em}}
 \begin{table}[H]
 \sffamily
@@ -156,26 +156,24 @@ We simulated the robot pathways on the following three grids. Each square in the
 \begin{tabular}{l*4{C}@{}}
 & \addmapa & \addmapb & \addmapc \\
 \end{tabular}
-\caption{Gridworld models}
-\end{table} 
+\caption{GridWorld Maps}
+\end{table}
 
+\subsection{Motion Settings}
 
-\subsection{Robot Motion Settings}
-
-As stated above, the robot path for each grid was simulated using three different settings for the transitions between states.
+As stated above, the path for each grid was simulated using three different settings for the transitions between states.
 
 \begin{enumerate}
-	\item \textbf{Purely random}: The robot randomly transitions from state to state, with a uniform transition probability over all of the states (including its current state). Therefore, the state sequence is essentially purely random, with each step randomly generated with replacement from the set of available states. This setting satisfies the Markov property, as each time step is independent from all other time steps.
+	\item \textbf{Purely Random}: The agent transitions from state to state with a uniform transition probability over all of the states (including its current state). Therefore, the state sequence is essentially purely random, with each step randomly generated with replacement from the set of available states. This setting satisfies the Markov property, as each realization of a future state is independent from the history of all previous states.
 	\item \textbf{Traditional Markov}: The state sequences are generated using a fixed transition matrix -- the probability of transitioning from one state to the next is constant as the sequence is generated (with one state selected as the starting state), and each step is independent of past states conditional on the present state. This setting satisfies the Markov property, so we would expect the HMM method to do well on the data simulated from it, in both estimating the transition probability matrix and in the accuracy of the maximum likelihood state sequence.
-	\item \textbf{Changing transition matrix (Stickiness}: HSMM specializes in inferring the observations when the transition is sticky. Sticky property is where the transition probability changes relative to how long the robot stays in the same state. The transition probability of staying in the same state decreases geometrically by the number of time the robot is in the same state. If the robot moves to a different state, the transition matrix returns to the original one that we started from.
+	\item \textbf{Sticky Transitions}: The HDP-HSMM specializes in inferring observations when the underlying motion is presumed to be "sticky". Specifically, a sticky process is one where transition probabilities correspond to an agent's elapsed duration in the same state. In our implementation, the probability of staying in the same state decreases geometrically with the duration, and resets upon entering a new state.
  \end{enumerate}
 
-\subsection{Robot Observation Settings}
+\subsection{Observation Settings}
 
-To compare the original HMM and HSMM together, we have modified the observation to be continuous. Each state is distinguished by its distinct mean, while the sigma is initialized to be the same across all state. The mean value is similar to the discrete setting, the value of 0, 1, 2, or 3. In each state, the robot observes a normal sample given the mu of the state.
+To compare the original HMM and HDP-HSMM, we simulate observations that are continuous measurements. Each state is distinguished by a distinct mean $\mu$, while the standard deviation $\sigma$ is initialized to be the same across all states. The mean value is similar to the discrete setting, where in each state, the robot observes a Gaussian sample given the mean of the state.
 
-To generate our data, for each of the 9 settings (3 grids x 3 transition settings), we simulated 200 state sequences of varying lengths. Then, we simulated observations from these state sequences using the randomly generated emission matrices (the "true" observation for each state was also randomly assigned). These generated observation sequences then became the input for our HMM and HSMM algorithms.
-
+To generate our data, for each of the 9 settings (3 grids x 3 transition settings), we simulated state sequences of length 200. Then, we simulated observations from these state sequences using the randomly generated emission matrices (the "true" observation for each state was also randomly assigned). These generated observation sequences were used as the inputs for our HMM and HDP-HSMM.
 
 \section{Headings: first level}
 \label{headings}

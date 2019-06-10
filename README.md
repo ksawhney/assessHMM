@@ -1,4 +1,4 @@
-# TTIC 31150 Robotics Final Project - Comparison of HMM and HSMM
+# TTIC 31170 Robotics Final Project - Comparison of HMM and HSMM
 
 ### Albert Lam, Kabir Sawhney, Joey Yoo
 

@@ -2,5 +2,4 @@
 
 ### Albert Lam, Kabir Sawhney, Joey Yoo
 
-We build a grid world simulator for a robot that can observe discrete or conntinuous data.
-Then, we use the EM (Parametric) and HSMM (Non-Parametric) to do inference on observation sequences.
+We empirically compare the accuracy of the Baum-Welch and Viterbi algorithms with the outputs of a Hierarchical Dirichlet Process Hidden Semi-Markov Model (HDP-HSMM) to estimate hidden state sequences from time-ordered observations. Agent pathways are simulated in a variety of GridWorld settings that vary in grid size, placement of obstacles, and transition mechanism, including settings which violate the Markov assumption implicit to traditional Hidden Markov Models. We found that the traditional HMM still performs reasonably well even when the Markov assumption is violated, and that the HMM method is more accurate that HDP-HSMM when there is adequate information to set an informative prior.

@@ -46,7 +46,7 @@
         \begin{itemize}
             \item We sought to \textbf{empirically test this proposition} on the problem of estimating an agent's path in a GridWorld setting
             \item Specifically, we \textbf{simulate agent pathways} under a variety of settings that differ in grid size, placement of obstacles, and transition mechanism, including settings which violate the Markov assumption implicit to traditional HMMs
-            \item Hierarchical Dirichlet Process Hidden Semi-Markov Models (\textbf{HDP-HSMMs}) are a Bayesian non-parametric approach to estimating hidden state sequences, where transition, emission and initial state distribution priors are not defined by the user. It is expected that these models will outperform HMMs in non-Markovian settings by better capturing these effects
+            \item Hierarchical Dirichlet Process Hidden Semi-Markov Models (\textbf{HDP-HSMMs}) are a Bayesian non-parametric approach to estimating hidden state sequences, where transition, emission and initial state distribution priors are not defined by the user. It is expected that these models will outperform HMMs in non-Markovian settings by better capturing these irregularities
         \end{itemize}
     \end{frame}
 
@@ -54,11 +54,11 @@
     \frametitle{HMM \& HSMM}
         A HMM consists of two sequences:
         \begin{itemize}
-          \item A \textbf{state sequence} $z = \{z_1, z_2, \dots, z_T\}$ where $z_t$ is the state at timestep $t$ which takes a value from a state space $\mathcal{Z}$ that is assumed to be static and finite for $t = 1, 2, \dots, T$.
-          \item An \textbf{observation (or emission) sequence} $x = \{x_1, x_2, \dots, x_T\}$ where $x_t$ is the observation at timestep $t$ from an observation space $\mathcal{X}$ that is assumed to be static and finite for $t = 1, 2, \dots, T$.
+          \item A \textbf{state sequence} $z = \{z_1, z_2, \dots, z_T\}$ where $z_t$ is the state at timestep $t$ which takes a value from a state space $\mathcal{Z}$ that is assumed to be static and finite for $t = 1, 2, \dots, T$
+          \item An \textbf{observation (or emission) sequence} $x = \{x_1, x_2, \dots, x_T\}$ where $x_t$ is the observation at timestep $t$ from an observation space $\mathcal{X}$ that is assumed to be static and finite for $t = 1, 2, \dots, T$
         \end{itemize}
 
-        A HSMM extends a HMM to settings where the sequence of states are \textbf{not strictly Markovian} - instead, the probability of transitioning to a new state $z_{s+1}$ depends on the elapsed time in the current state $z_s$. In particular, let $D_s \in [1, \dots, T]$ denote the \textbf{duration} that an agent remains in state $x_s$ with explicit mass function $\mathbb{P}(D_s = d_s | z_s = i)$.
+        A HSMM extends a HMM to settings where the sequence of states are \textbf{not strictly Markovian} - instead, the probability of transitioning to a new state $z_{s+1}$ depends on the elapsed time in the current state $z_s$
 \end{frame}
 
 \begin{frame}
@@ -66,7 +66,7 @@
     \begin{figure}[H]
     \centering
     \includegraphics[scale=0.15]{images/hsmm2.png}
-    \caption{HSMM where super state transitions are Markovian, while emissions associated with each state follow some explicit duration distribution.}
+    \caption{HSMM where super state transitions are Markovian, while emissions associated with each state follow some explicit duration distribution}
     \label{fig:hsmm}
     \end{figure}
 \end{frame}
@@ -85,13 +85,12 @@
         \item $\gamma, \alpha > 0$: concentration parameters, $H$: base distribution of Dirichlet process (DP)
         \item $\{\beta_k\}_{k=1}^{\infty}$: stick-breaking process with parameter $\gamma$
         \item $\{\pi_k \}_{k=1}^{\infty}$: transition distributions drawn from DP, $h(\theta_{z_t})$: observation distributions drawn from $H$
-        \item Each state $z_t$ is drawn from $\pi_{z_{t-1}}$, and each observation $x_t$ is drawn from $h(\theta_{z_t})$
     \end{itemize}
 \end{frame}
 
 \begin{frame}
     \frametitle{HDP-HSMM}
-    HDP-HSMM is an augmentation of the HDP-HMM to \textbf{include duration distributions}. The main difference is that durations $D_s$ are drawn from base distribution $G$ and sub-states $z'_{t_{s}:t'_{s}}$ are then set to the corresponding super-state $z_{s}$ where $t_{s}:t'_{s}$ are sequence indices
+    HDP-HSMM is an augmentation of the HDP-HMM to \textbf{include duration distributions}. The main difference is that durations $D_s$ are drawn from base distribution $G$ and sub-states $z'_{t_{s}:t'_{s}}$ are then set to the corresponding super-state $z_{s}$
     \begin{itemize}
       \item $\beta_k \coloneqq \beta_k'\cdot \prod_{i=1}^{k-1} (1-\beta_i')$ where $\beta_i' \overset{\text{i.i.d}}{\sim} Beta(1,\gamma)$
       \item $\pi_k \overset{\text{i.i.d}}{\sim} DP(H(\beta), \alpha)$ for $k = 1, \dots, \infty$ where $\beta = \{\beta_k\}_{k=1}^{\infty}$
@@ -115,9 +114,8 @@
 \begin{frame}
     \frametitle{Data Generation - GridWorld Settings}
         \begin{itemize}
-            \item Grid Size: 5x5
-            \item States: The observation at each state is Gaussian with mean $\mu$ as the true identity of the state, $\sigma$ is constant across all states
-            \item Obstacles: Different formation of obstacles indicate states that cannot be visited by the agent
+            \item \textbf{Grid Size:} 5x5
+            \item \textbf{Obstacles:} Different formation of obstacles indicate states that cannot be visited by the agent
         \end{itemize}
 
         \newcommand{\addmapa}{\includegraphics[width=10em]{data/Model1/5x5;4;free.png}}
@@ -139,16 +137,25 @@
     \begin{itemize}
     \item \textbf{Purely Random}: Uniform transition probability over all states (including current state). This setting satisfies the Markov property, as each realization of a future state is independent from the history of all previous states
     \item \textbf{Traditional Markov}: The state sequences are generated using a fixed transition matrix -- the probability of transitioning from one state to the next is constant as the sequence is generated. This setting also satisfies the Markov property
-    \item \textbf{Sticky Transitions}: The HDP-HSMM specializes in inferring observations when the underlying motion is presumed to be "sticky". Specifically, a sticky process is one where transition probabilities correspond to an agent's elapsed duration in the same state. In our implementation, the probability of staying in the same state decreases geometrically with the duration, and resets upon entering a new state
+    \item \textbf{Sticky Transitions}: A sticky process is one where transition probabilities correspond to an agent's elapsed duration in the same state. In our implementation, the probability of staying in the same state decreases geometrically with the duration, and resets upon entering a new state
     \end{itemize}
 \end{frame}
 
 \begin{frame}
-	\frametitle{HMM Prior Settings}
+    \frametitle{Data Generation - Observation Sequences}
+    \begin{itemize}
+        \item Observations are realizations of a \textbf{Gaussian random variable based on the state}. Each state is randomly assigned a true mean $\mu$, and the standard deviation is identical and fixed at $\sigma = 0.5$ across all states
+        \item There are \textbf{eight possible true values of $\mu$}, so some of the 25 states will have the same observation mean
+        \item Simulate 10 state sequences of length 200, and observations are then generated using the emission distributions
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Priors for HMM}
 	\begin{itemize}
-		\item \textbf{Initial state}: Uniform over all valid states
-		\item \textbf{Transition matrix}: $p = 0.2$ of staying in the same state, remaining probability $p = 0.8$ distributed evenly across valid adjacent states.
-		\item \textbf{Emission distribution}: $\mathcal{N}(\mu, \sigma^2)$ based on known true values of $\mu$ and $\sigma$.
+		\item \textbf{Initial State Distribution}: Uniform over all valid states
+		\item \textbf{Transition Matrix}: $p = 0.2$ of staying in the same state, remaining probability $p = 0.8$ distributed evenly across valid adjacent states
+		\item \textbf{Emission Distribution}: $\mathcal{N}(\mu, \sigma^2)$ based on known true values of $\mu$ and $\sigma$
 	\end{itemize}
 \end{frame}
 
@@ -190,18 +197,57 @@
 \begin{frame}
 	\frametitle{Discussion - Markov Property in HMM}
 	\begin{itemize}
-		\item Relaxing the Markov assumptions did not lead to significantly worse results. The reduction in accuracy is small enough to allow application of the method to data where the Markov assumption is not met.
-		\item Having obstacles on the map lowered the misclassification rate in the Markov setting -- obstacles meant having fewer overall hidden states and a smaller number of potential paths, which makes the hidden states easier to estimate.
-		\item The number of possible true values of $\mu$ had a large effect on the misclassification rate -- the more possibilities there were, the better the algorithm performed.
+		\item Relaxing the Markov assumptions \textbf{did not lead to significantly worse results}. The reduction in accuracy is small enough to allowapplication of the method to data where the Markov assumption is not met
+		\item Having obstacles on the map lowered the misclassification rate in the Markov setting -- obstacles meant having fewer overall hidden states and a \textbf{smaller number of potential paths, which makes the hidden states easier to estimate}
+		\item The number of possible true values of $\mu$ had a large effect on the misclassification rate -- \textbf{the more possibilities there were, the better the algorithm performed}
 	\end{itemize}
 \end{frame}
 
 \begin{frame}
 	\frametitle{Discussion - Comparing HMM and HDP-HSMM}
+    \begin{itemize}
+      \item \textbf{Inferring the number of states}: The HDP-HSMM must correctly infer the true number of states without user-supplied prior information. In our implementation that uses 25 states, this can result in many states being easily mistaken by the HDP-HSMM to be the same state
+      \item \textbf{Strength of non-Markovity}: The probability of staying in the same state at any given timestep is $0.2$. Using this level in the sticky motion model tends to only produce weak non-Markovity, and any stickiness to the same state will be ephemeral compared to settings where the probability level is larger
+      \item \textbf{Convergence}: There is some concern about whether the HDP-HSMM converged sufficiently in our experiments. Tests with longer sequences and more sequences did not yield significantly different results, but it is not clear what scale is appropriate given the problem space
+    \end{itemize}
 \end{frame}
 
 \begin{frame}
-	\frametitle{Conclusion \& Further Work}
+    \frametitle{Discussion - HDP-HSMM Diagnostics}
+    \newcommand{\addrandommeana}{\includegraphics[width=10em]{images/hdphsmm/random-m1-means.png}}
+    \newcommand{\addmarkovmeana}{\includegraphics[width=10em]{images/hdphsmm/markov-m1-means.png}}
+    \newcommand{\addcorrmeana}{\includegraphics[width=10em]{images/hdphsmm/corr-m1-means.png}}
+    \begin{table}[H]
+    \sffamily
+    \centering
+    \begin{tabular}{l*4{C}@{}}
+    \addrandommeana \addmarkovmeana \addcorrmeana \\
+    \end{tabular}
+    \caption{Estimated means and true means for different motions (random, Markov and sticky) through Map 1}
+    \label{table:meaninfer}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Discussion - HDP-HSMM Diagnostics}
+    \newcommand{\addrandomseqa}{\includegraphics[width=10em]{images/hdphsmm/random-m1-seq.png}}
+    \newcommand{\addmarkovseqa}{\includegraphics[width=10em]{images/hdphsmm/markov-m1-seq.png}}
+    \newcommand{\addcorrseqa}{\includegraphics[width=10em]{images/hdphsmm/corr-m1-seq.png}}
+    \begin{table}[H]
+    \sffamily
+    \centering
+    \begin{tabular}{l*4{C}@{}}
+    \addrandomseqa \addmarkovseqa \addcorrseqa \\
+    \end{tabular}
+    \caption{Observation sequences mapped to inferred states for different motions (random, Markov and sticky) through Map 1}
+    \label{table:stateinfer}
+    \end{table}
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Conclusions \& Further Work}
 \end{frame}
 
 \begin{frame}

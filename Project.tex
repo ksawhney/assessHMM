@@ -34,6 +34,7 @@
 \graphicspath{{./images/}}
 \usepackage{float}
 \usepackage{array}
+\usepackage{subfig}
 
 \title{Empirical Assessment of HMM and HDP-HSMM Methods}
 
@@ -77,7 +78,7 @@
 \maketitle
 
 \begin{abstract}
-We empirically compare the accuracy of the Baum-Welch and Viterbi algorithms with the outputs of a Hierarchical Dirichlet Process Hidden Semi-Markov Model (HDP-HSMM) to estimate hidden state sequences from time-ordered observations. Specifically, we simulate agent pathways in a variety of GridWorld settings that vary in grid size, placement of obstacles, and transition mechanism, including settings which violate the Markov assumption implicit to traditional Hidden Markov Models (HMMs). We found that (to be filled in)
+We empirically compare the accuracy of the Baum-Welch and Viterbi algorithms with the outputs of a Hierarchical Dirichlet Process Hidden Semi-Markov Model (HDP-HSMM) to estimate hidden state sequences from time-ordered observations. We simulate agent pathways in a variety of GridWorld settings that vary in grid size, placement of obstacles, and transition mechanism, including settings which violate the Markov assumption implicit to traditional Hidden Markov Models. Our primary findings were that the traditional HMM still performs reasonably well even when the Markov assumption is violated, and that the HMM method is more accurate that HDP-HSMM when there is adequate information to set an informative prior.
 \end{abstract}
 
 \section{Background and Introduction}
@@ -138,8 +139,8 @@ To generate the agent pathways and observations, we varied the following grid se
 
 \begin{enumerate}
 	\item \textbf{Grid Size}: We generated pathways on 5$\times$5 grids, so each grid has 25 hidden states.
-	\item \textbf{Obstacles}: Obstacles are placed in each grid by making certain states impossible to visit -- this is analogous to a robot encountering physical boundaries, like walls or other objects. The number and placement of obstacles in each grid is varied with the expectation that increasing the number of obstacles will improve the accuracy of the estimation methods, as there are fewer feasible paths for the agent.
-	\item \textbf{Markov Property}: We simulated three different settings for the transition matrix between states, two of which did not violate the Markov assumption and one that did. Further details of these settings can be found in Section 2.2 below.
+	\item \textbf{Obstacles}: Obstacles are placed in each grid by making certain states impossible to visit -- this is analogous to a robot encountering physical boundaries, like walls or other objects.
+	\item \textbf{Markov Property}: We simulated different settings for the transition matrix between states, with one setting violating the Markov assumption. Further details of these settings in Section 2.2.
 \end{enumerate}
 
 \subsection{GridWorld Setup}
@@ -164,8 +165,8 @@ We simulated pathways on the following three grids. Each square in the grid eith
 As stated above, the path for each grid was simulated using three different settings for the transitions between states.
 
 \begin{enumerate}
-	\item \textbf{Purely Random}: The agent transitions from state to state with a uniform transition probability over all of the states (including its current state). Therefore, the state sequence is essentially purely random, with each step randomly generated with replacement from the set of available states. This setting satisfies the Markov property, as each realization of a future state is independent from the history of all previous states.
-	\item \textbf{Traditional Markov}: The state sequences are generated using a fixed transition matrix -- the probability of transitioning from one state to the next is constant as the sequence is generated (with one state selected as the starting state), and each step is independent of past states conditional on the present state. This setting satisfies the Markov property, so we would expect the HMM method to do well on the data simulated from it, in both estimating the transition probability matrix and in the accuracy of the maximum likelihood state sequence.
+	\item \textbf{Purely Random}: The agent transitions from state to state with a uniform transition probability over all of the states (including its current state) -- each step is essentially randomly generated with replacement from the set of valid states. This setting satisfies the Markov property.
+	\item \textbf{Traditional Markov}: The state sequences are generated using a fixed transition matrix -- the probability of transitioning from a given state to the next state is constant as the sequence is generated, and each step is independent of past states conditional on the present state. This setting satisfies the Markov property.
 	\item \textbf{Sticky Transitions}: The HDP-HSMM specializes in inferring observations when the underlying motion is presumed to be "sticky". Specifically, a sticky process is one where transition probabilities correspond to an agent's elapsed duration in the same state. In our implementation, the probability of staying in the same state decreases geometrically with the duration, and resets upon entering a new state.
  \end{enumerate}
 
@@ -173,32 +174,30 @@ To generate the "true" transition matrix from which the robot path would be simu
 
 \subsection{Observation Settings}
 
-To compare the original HMM and HDP-HSMM, we simulate observations that are continuous measurements. Each state is assigned a true mean $\mu$, while the standard deviation is identical and fixed at $\sigma = 0.5$ across all states. There were eight possible true values of $\mu$, so some of the 25 states had the same observation mean. The mean value is similar to the discrete setting, but here the agent observes a Gaussian sample given the mean of the state.
+To compare the original HMM and HDP-HSMM, we simulate observations that are continuous measurements. Each state is assigned a true mean $\mu$, while the standard deviation is identical and fixed at $\sigma = 0.5$. There were eight possible true values of $\mu$, so some of the states had the same observation mean. The agent observes a Gaussian sample given the mean of the state.
 
 To generate our data, for each of the 9 settings (3 grids x 3 transition settings), we simulate 10 state sequences of length 200. Then, observations from these state sequences are generated using the emission distributions, where the "true" observation for each state was randomly assigned. These generated observation sequences were used as the inputs for our HMM and HDP-HSMM.
 
 \section{Results}
 
-To measure the accuracy of the HMM and HDP-HSMM methods, we measured the misclassification rate between the state sequences estimated by each method from the observation sequences, and the true state sequences from which the observations were generated. Our results below are the median misclassification rate across our 10 generated sequences using each method. Here, Map 1 is a grid without any obstacles, Map 2 is a grid with obstacles near the center, and Map 3 is a near-completely separated grid.
+To measure the accuracy of the HMM and HDP-HSMM methods, we measured the misclassification rate between the state sequences estimated by each method from the observation sequences, and the true state sequences from which the observations were generated. Our results below are the median misclassification rate across our 10 generated sequences using each method.
 
-\begin{table}[H]
+\begin{table}[H]	
 	\centering
-	\begin{tabular}{|l|l|l|l|}
-	\hline
-	& Map 1 & Map 2 & Map 3 \\
-	\hline
-	Random	& 0.908 & 0.908 & 0.908  \\
-	\hline
-	Markov & 0.483 & 0.435 & 0.440 \\
-	\hline
-	Sticky & 0.460 & 0.475& 0.503 \\
-	\hline
-	\end{tabular}
-	\caption{HMM Results}
-\end{table}
-
-\begin{table}[H]
-	\centering
+	\subfloat[HMM Results]{
+		\begin{tabular}{|l|l|l|l|}
+		\hline
+		& Map 1 & Map 2 & Map 3 \\
+		\hline
+		Random	& 0.908 & 0.908 & 0.908  \\
+		\hline
+		Markov & 0.483 & 0.435 & 0.440 \\
+		\hline
+		Sticky & 0.460 & 0.475& 0.503 \\
+		\hline
+		\end{tabular}
+	}
+	\subfloat[HDP-HSMM Results]{
 	\begin{tabular}{|l|l|l|l|}
 		\hline
 		& Map 1 & Map 2 & Map 3 \\
@@ -209,17 +208,21 @@ To measure the accuracy of the HMM and HDP-HSMM methods, we measured the misclas
 		\hline
 		Sticky & 0.790 & 0.788 & 0.785 \\
 		\hline
-	\end{tabular}
-	\caption{HDP-HSMM Results}
+		\end{tabular}
+	}
+	%\caption{HDP-HSMM Results}
+	% \caption{HMM Results}
+	
 \end{table}
+
 
 \section{Discussion}
 
 \subsection{Markov Property and Obstacles in HMM}
 
-The results of applying the Baum-Welch and Viterbi algorithm to our simulated sequences largely confirm that relaxing the Markov assumptions does not lead to significantly worse results. In the two maps with obstacles, the misclassification rate in the sticky transition setting was 4-6 percentage points worse than the Markovian setting, and in the map without obstacles the sticky setting actually got a lower misclassification rate. This small reduction in accuracy is acceptable, as it allows the application of the method to many more data sets -- the Markov assumption is frequently violated by real data.
+The results of applying the Baum-Welch and Viterbi algorithm to our simulated sequences largely confirm that relaxing the Markov assumption does not lead to significantly worse results. The misclassification rate in the sticky transition setting was no more than 6 percentage points worse than the Markovian setting. This small reduction in accuracy is acceptable, as it allows the application of the method to many more data sets -- real data often violates the Markov assumption.
 
-An interesting result was the effect of the number and placement of obstacles on the map. In the Markovian setting, the misclassification rate for the two maps with obstacles, Maps 2 and 3, were lower than the rate for Map 1, with no obstacles. The most likely explanation is that, by reducing the total number of valid states and the number of possible pathways, obstacles actually make it easier to estimate the hidden state sequence of the agent. This pattern was reversed in the sticky transition setting, though we do not have a strong intuitive explanation for why this is the case.
+An interesting result was the effect of the number and placement of obstacles on the map. In the Markovian setting, the misclassification rate for the two maps with obstacles, Maps 2 and 3, were lower than the rate for Map 1, with no obstacles. By reducing the total number of valid states and the number of possible pathways, obstacles actually make it easier to estimate the hidden state sequence of the agent. This pattern was reversed in the sticky transition setting, though we do not have a strong intuitive explanation for this observation.
 
 We also discovered observation generation settings under which the method performed very poorly. If we set the number of possible true $\mu$ values to be small -- so many states shared the same mean -- the misclassification rate was sharply higher. The more possibilities there were, the better the algorithm performed. This made sense to us, as the method would have a hard time determining which state a certain observation came from if many states had a similarly high likelihood under the emission distribution.
 
@@ -228,7 +231,7 @@ We also discovered observation generation settings under which the method perfor
 Compared to the HMM, the HDP-HSMM performs noticably poorer across the different grid and motion settings, which is somewhat unexpected. There are a number of possible explanations for why this may have occurred based on our implementation:
 
 \begin{itemize}
-  \item \textbf{Inferring the number of states:} A particular challenge common across non-parametric methods is that the HDP-HSMM must correctly infer the true number of states without user-supplied prior information. In our implementation that uses 25 states, where each state had a true mean that was one of eight possible distinct values, this can result in many states being easily mistaken by the HDP-HSMM to be the same state. We illustrate this phenomenon in Table~\ref{table:meaninfer} below, where the estimated state means (blue) are plotted against the true state means (green). Here, we provide some assistance to the HDP-HSMM algorithm by putting a threshold on the maximum number of total states. HDP-HSMM infers a mean for each Gaussian but only a subset of these are used (red) for inference, which tend to congregate towards regions where the means are relatively large with respect to the fixed $\sigma$. It follows that states where the true means are similar and relatively small with respect to the fixed $\sigma$ tend to be overlooked as distinct states, which then leads to higher misclassification error.
+  \item \textbf{Inferring the number of states:} A particular challenge common across non-parametric methods is that the HDP-HSMM must correctly infer the true number of states without user-supplied prior information. Our implementation uses 25 states where each state had a true mean that was one of eight possible distinct values -- this can result in many states being easily mistaken by the HDP-HSMM to be the same state. We illustrate this phenomenon in Table~\ref{table:meaninfer} below, where the estimated state means (blue) are plotted against the true state means (green). Here, we provide some assistance to the HDP-HSMM algorithm by putting a threshold on the maximum number of total states. HDP-HSMM infers a mean for each Gaussian but only a subset of these are used (red) for inference, which tend to congregate towards regions where the means are relatively large with respect to the fixed $\sigma$. It follows that states where the true means are similar and relatively small with respect to the fixed $\sigma$ tend to be overlooked as distinct states, which then leads to higher misclassification error.
   \item \textbf{Strength of non-Markovity:} Our simulations begin by initializing a probability level ($0.2$) for the agent to stay in the same state at any given timestep, which then defines the rest of the transition matrix. Using this level in the sticky motion model tends to only produce weak non-Markovity since the probability of transitioning to a new state is relatively high, and any stickiness to the same state will be ephemeral compared to settings where the probability level is larger as a result of the properties of the geometric distribution. We illustrate this phenomenon in Table~\ref{table:stateinfer} where the sticky motion model is very similar to our Markovian motion.
   \item \textbf{Convergence:} There is some concern about whether HDP-HSMM converged sufficiently in our experiments. Tests with longer sequences and more sequences did not yield significantly different results, but it is not clear what scale is appropriate given the problem space. HDP-HSMM did not converge for the random motion models in Maps 2 and 3, which suggests that having one universal setting for sequence length and number of sequences for all problems may not be appropriate.
 \end{itemize}
@@ -258,6 +261,25 @@ Compared to the HMM, the HDP-HSMM performs noticably poorer across the different
 \caption{Observation sequences mapped to inferred states for different motions (random, Markov and sticky) through Map 1}
 \label{table:stateinfer}
 \end{table}
+
+\section{Conclusions and Future Work}
+
+We drew two primary conclusions from our study:
+
+\begin{itemize}
+	\item \textbf{HMM Performance in Non-Markov Settings}: The classic HMM method produced reasonable results even when applied to data that violates the Markov assumption. The loss in accuracy is acceptable for the ability to apply the method to non-Markovian data.
+	\item \textbf{Accuracy of HMM vs. HDP-HSMM}: In our test settings, the HMM method had a much lower misclassification rate than the HDP-HSMM method. This result likely came about because we had knowledge of how the data was generated. We were able to set up the HMM with a well-informed prior, while the HDP-HSMM method struggled to infer the correct number of states. We likely would have seen different results if we did not have any information with which to set up a strong prior for the HMM method.
+\end{itemize}
+
+Based on these conclusions, there are several avenues to extend our work:
+
+\begin{itemize}
+	\item For reasons of time, we limited our study to 2,000 simulated observations, with one random seed setting. There is a great deal of scope to expand our experiments through generating more data, including using different random generator seeds, different grid sizes and obstacle placements, and adjusting the transition and emission distributions.
+	\item We could test the accuracy of the HMM under less-informative priors. From our testing, increasing the closeness of the prior to the true distributions had a strong effect on accuracy, so it could be interesting to empirically test the importance of having good prior distributions.
+	\item We could strengthen the non-Markovity and make the true means of the states more distinct, to see how the HDP-HSMM performs in that setting. Our simulated data in this paper was designed to test the Markov assumption for HMMs, while the HDP-HSMM was proposed to deal with a different set of data problems.
+\end{itemize}
+
+\newpage
 
 \section*{References}
 \medskip
